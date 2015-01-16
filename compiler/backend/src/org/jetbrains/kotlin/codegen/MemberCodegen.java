@@ -140,9 +140,9 @@ public abstract class MemberCodegen<T extends JetElement/* TODO: & JetDeclaratio
         writeInnerClasses();
 
         if (sourceMapper != null) {
-            List<FileMapping> mapping = sourceMapper.getFileMapping();
-            for (FileMapping fileMapping : mapping) {
-                v.addSMAP(fileMapping);
+            List<RawFileMapping> mapping = sourceMapper.getFileMapping();
+            for (RawFileMapping fileMapping : mapping) {
+                v.addSMAP(fileMapping.toFileMapping());
             }
         }
 
