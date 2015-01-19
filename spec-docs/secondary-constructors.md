@@ -69,7 +69,7 @@ The error is: "superclass must be initialized". This class has a primary constru
 
 ```
 constructor
-  : "constructor" valueParameters (":" constructorDelegationCall) block
+  : modifiers "constructor" valueParameters (":" constructorDelegationCall) block
   ;
   
 constructorDelegationCall
