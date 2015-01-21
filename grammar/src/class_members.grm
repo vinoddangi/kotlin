@@ -34,9 +34,11 @@ memberDeclaration
   : class
   : typeAlias
   : anonymousInitializer
+  : secondaryConstructor
   ;
 
 anonymousInitializer
+  : "constructor" block
   : block
   ;
 
@@ -113,6 +115,15 @@ parameter
 
 object
   : "object" SimpleName (":" delegationSpecifier{","})? classBody? // Class body can be optional: this is a declaration
+
+secondaryConstructor
+  : modifiers "constructor" valueParameters (":" constructorDelegationCall)? block
+  ;
+
+constructorDelegationCall
+  : "this" valueArguments
+  : "super" valueArguments
+  ;
 /**
 See [Object expressions and Declarations](object-declarations.html)
 */

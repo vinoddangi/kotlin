@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
 public class JetParsingTestGenerated extends AbstractJetParsingTest {
     @TestMetadata("compiler/testData/psi")
     @TestDataPath("$PROJECT_ROOT")
-    @InnerTestClasses({Psi.Annotation.class, Psi.Examples.class, Psi.FunctionReceivers.class, Psi.GreatSyntacticShift.class, Psi.Kdoc.class, Psi.PlatformTypesRecovery.class, Psi.PropertyDelegate.class, Psi.Recovery.class, Psi.Script.class, Psi.StringTemplates.class})
+    @InnerTestClasses({Psi.Annotation.class, Psi.Examples.class, Psi.FunctionReceivers.class, Psi.GreatSyntacticShift.class, Psi.Kdoc.class, Psi.PlatformTypesRecovery.class, Psi.PropertyDelegate.class, Psi.Recovery.class, Psi.Script.class, Psi.SecondaryConstructors.class, Psi.StringTemplates.class})
     @RunWith(JUnit3RunnerWithInners.class)
     public static class Psi extends AbstractJetParsingTest {
         @TestMetadata("AbsentInnerType.kt")
@@ -1693,6 +1693,45 @@ public class JetParsingTestGenerated extends AbstractJetParsingTest {
             @TestMetadata("unexpectedSymbol.kts")
             public void testUnexpectedSymbol() throws Exception {
                 String fileName = JetTestUtils.navigationMetadata("compiler/testData/psi/script/unexpectedSymbol.kts");
+                doParsingTest(fileName);
+            }
+        }
+
+        @TestMetadata("compiler/testData/psi/secondaryConstructors")
+        @TestDataPath("$PROJECT_ROOT")
+        @RunWith(JUnit3RunnerWithInners.class)
+        public static class SecondaryConstructors extends AbstractJetParsingTest {
+            public void testAllFilesPresentInSecondaryConstructors() throws Exception {
+                JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), new File("compiler/testData/psi/secondaryConstructors"), Pattern.compile("^(.*)\\.kts?$"), true);
+            }
+
+            @TestMetadata("anonymousInitializer.kt")
+            public void testAnonymousInitializer() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/psi/secondaryConstructors/anonymousInitializer.kt");
+                doParsingTest(fileName);
+            }
+
+            @TestMetadata("basic.kt")
+            public void testBasic() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/psi/secondaryConstructors/basic.kt");
+                doParsingTest(fileName);
+            }
+
+            @TestMetadata("recoveryEmptyDelegationType.kt")
+            public void testRecoveryEmptyDelegationType() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/psi/secondaryConstructors/recoveryEmptyDelegationType.kt");
+                doParsingTest(fileName);
+            }
+
+            @TestMetadata("recoveryWithoutParameterList.kt")
+            public void testRecoveryWithoutParameterList() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/psi/secondaryConstructors/recoveryWithoutParameterList.kt");
+                doParsingTest(fileName);
+            }
+
+            @TestMetadata("recoveryWrongDelegationName.kt")
+            public void testRecoveryWrongDelegationName() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/psi/secondaryConstructors/recoveryWrongDelegationName.kt");
                 doParsingTest(fileName);
             }
         }

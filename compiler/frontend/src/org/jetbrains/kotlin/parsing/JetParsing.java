@@ -412,6 +412,9 @@ public class JetParsing extends AbstractJetParsing {
         PsiBuilder.Marker list = mark();
         boolean empty = true;
         while (!eof()) {
+            if (!annotationParsingMode.allowConstructorAnnotation && at(CONSTRUCTOR_KEYWORD)) {
+                break;
+            }
             if (atSet(MODIFIER_KEYWORDS)) {
                 if (tokenConsumer != null) tokenConsumer.consume(tt());
                 advance(); // MODIFIER
@@ -766,7 +769,7 @@ public class JetParsing extends AbstractJetParsing {
      *
      * memberDeclaration'
      *   : classObject
-     *   : constructor
+     *   : secondaryConstructor
      *   : function
      *   : property
      *   : class
@@ -780,7 +783,7 @@ public class JetParsing extends AbstractJetParsing {
         PsiBuilder.Marker decl = mark();
 
         TokenDetector enumDetector = new TokenDetector(ENUM_KEYWORD);
-        parseModifierList(MODIFIER_LIST, enumDetector, REGULAR_ANNOTATIONS_ALLOW_SHORTS);
+        parseModifierList(MODIFIER_LIST, enumDetector, REGULAR_ANNOTATIONS_ALLOW_SHORTS_PROHIBIT_CONSTRUCTOR);
 
         IElementType declType = parseMemberDeclarationRest(enumDetector.isDetected());
 
@@ -824,7 +827,74 @@ public class JetParsing extends AbstractJetParsing {
             parseBlock();
             declType = ANONYMOUS_INITIALIZER;
         }
+        else if (at(CONSTRUCTOR_KEYWORD)) {
+            if (lookahead(1) == LBRACE) {
+                advance(); // CONSTRUCTOR_KEYWORD
+                parseBlock();
+                declType = ANONYMOUS_INITIALIZER;
+            }
+            else {
+                parseSecondaryConstructor();
+                declType = SECONDARY_CONSTRUCTOR;
+            }
+        }
         return declType;
+    }
+
+    /*
+     * secondaryConstructor
+     *   : modifiers "constructor" valueParameters (":" constructorDelegationCall)? block
+     * constructorDelegationCall
+     *   : "this" valueArguments
+     *   : "super" valueArguments
+     */
+    private void parseSecondaryConstructor() {
+        assert _at(CONSTRUCTOR_KEYWORD);
+
+        advance(); // CONSTRUCTOR_KEYWORD
+
+        TokenSet valueArgsRecoverySet = TokenSet.create(COLON, LBRACE, SEMICOLON, RPAR);
+        if (at(LPAR)) {
+            parseValueParameterList(false, valueArgsRecoverySet);
+        }
+        else {
+            errorWithRecovery("Expecting '('", valueArgsRecoverySet);
+        }
+
+        if (at(COLON)) {
+            advance(); // COLON
+
+            PsiBuilder.Marker delegationCall = mark();
+
+            if (at(THIS_KEYWORD) || at(SUPER_KEYWORD)) {
+                parseThisOrSuper();
+            }
+            else {
+                // if we're on LPAR it's probably start of value arguments list
+                if (!at(LPAR)) {
+                    advance(); // wrong delegation call keyword?
+                }
+                error("Expecting a 'this' or 'super' constructor call");
+            }
+
+            myExpressionParsing.parseValueArgumentList();
+
+            delegationCall.done(CONSTRUCTOR_DELEGATION_CALL);
+        }
+
+        parseBlock();
+    }
+
+    private void parseThisOrSuper() {
+        assert _at(THIS_KEYWORD) || _at(SUPER_KEYWORD);
+        boolean isThis = at(THIS_KEYWORD);
+        PsiBuilder.Marker mark = mark();
+
+        PsiBuilder.Marker reference = mark();
+        advance(); // THIS_KEYWORD | SUPER_KEYWORD
+        reference.done(REFERENCE_EXPRESSION);
+
+        mark.done(isThis ? THIS_EXPRESSION : SUPER_EXPRESSION);
     }
 
     /*
@@ -2008,14 +2078,21 @@ public class JetParsing extends AbstractJetParsing {
         FILE_ANNOTATIONS_BEFORE_PACKAGE(false, true),
         FILE_ANNOTATIONS_WHEN_PACKAGE_OMITTED(false, true),
         REGULAR_ANNOTATIONS_ONLY_WITH_BRACKETS(false, false),
-        REGULAR_ANNOTATIONS_ALLOW_SHORTS(true, false);
+        REGULAR_ANNOTATIONS_ALLOW_SHORTS(true, false),
+        REGULAR_ANNOTATIONS_ALLOW_SHORTS_PROHIBIT_CONSTRUCTOR(true, false, false);
 
         boolean allowShortAnnotations;
         boolean isFileAnnotationParsingMode;
+        boolean allowConstructorAnnotation = true;
 
         AnnotationParsingMode(boolean allowShortAnnotations, boolean onlyFileAnnotations) {
             this.allowShortAnnotations = allowShortAnnotations;
             this.isFileAnnotationParsingMode = onlyFileAnnotations;
+        }
+
+        AnnotationParsingMode(boolean allowShortAnnotations, boolean onlyFileAnnotations, boolean allowConstructorAnnotation) {
+            this(allowShortAnnotations, onlyFileAnnotations);
+            this.allowConstructorAnnotation = allowConstructorAnnotation;
         }
     }
 }
