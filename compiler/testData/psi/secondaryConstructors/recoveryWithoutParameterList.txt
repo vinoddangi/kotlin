@@ -17,9 +17,8 @@ JetFile: recoveryWithoutParameterList.kt
         PsiElement(COLON)(':')
         PsiWhiteSpace(' ')
         CONSTRUCTOR_DELEGATION_CALL
-          THIS_EXPRESSION
-            REFERENCE_EXPRESSION
-              PsiElement(this)('this')
+          CONSTRUCTOR_DELEGATION_REFERENCE
+            PsiElement(this)('this')
           VALUE_ARGUMENT_LIST
             PsiElement(LPAR)('(')
             PsiElement(RPAR)(')')
@@ -57,9 +56,8 @@ JetFile: recoveryWithoutParameterList.kt
         PsiElement(COLON)(':')
         PsiWhiteSpace(' ')
         CONSTRUCTOR_DELEGATION_CALL
-          THIS_EXPRESSION
-            REFERENCE_EXPRESSION
-              PsiElement(this)('this')
+          CONSTRUCTOR_DELEGATION_REFERENCE
+            PsiElement(this)('this')
           VALUE_ARGUMENT_LIST
             PsiElement(LPAR)('(')
             PsiElement(RPAR)(')')

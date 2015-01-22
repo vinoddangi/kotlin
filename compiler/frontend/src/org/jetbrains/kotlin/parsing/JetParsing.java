@@ -887,14 +887,11 @@ public class JetParsing extends AbstractJetParsing {
 
     private void parseThisOrSuper() {
         assert _at(THIS_KEYWORD) || _at(SUPER_KEYWORD);
-        boolean isThis = at(THIS_KEYWORD);
         PsiBuilder.Marker mark = mark();
 
-        PsiBuilder.Marker reference = mark();
         advance(); // THIS_KEYWORD | SUPER_KEYWORD
-        reference.done(REFERENCE_EXPRESSION);
 
-        mark.done(isThis ? THIS_EXPRESSION : SUPER_EXPRESSION);
+        mark.done(CONSTRUCTOR_DELEGATION_REFERENCE);
     }
 
     /*
