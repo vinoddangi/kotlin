@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-package org.jetbrains.kotlin.idea.references;
+package org.jetbrains.kotlin.psi;
 
-import com.intellij.openapi.util.TextRange;
-import org.jetbrains.kotlin.psi.JetThisReferenceExpression;
+import com.intellij.lang.ASTNode;
+import org.jetbrains.annotations.NotNull;
 
-public class JetThisReference extends JetSimpleReference<JetThisReferenceExpression> {
-    public JetThisReference(JetThisReferenceExpression expression) {
-        super(expression);
+public class JetConstructorDelegationReferenceExpression extends JetExpressionImpl implements JetReferenceExpression {
+    public JetConstructorDelegationReferenceExpression(@NotNull ASTNode node) {
+        super(node);
     }
 
-    @Override
-    public TextRange getRangeInElement() {
-        return new TextRange(0, getElement().getTextLength());
+    public boolean isThis() {
+        return "this".equals(getText());
     }
 }
