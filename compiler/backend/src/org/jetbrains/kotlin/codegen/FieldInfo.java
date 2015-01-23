@@ -17,10 +17,13 @@
 package org.jetbrains.kotlin.codegen;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
 import org.jetbrains.kotlin.codegen.state.JetTypeMapper;
 import org.jetbrains.kotlin.descriptors.ClassDescriptor;
 import org.jetbrains.kotlin.descriptors.ClassKind;
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.load.java.JvmAbi;
+import org.jetbrains.kotlin.name.Name;
 import org.jetbrains.kotlin.resolve.DescriptorUtils;
 import org.jetbrains.org.objectweb.asm.Type;
 
@@ -35,7 +38,25 @@ public class FieldInfo {
         ClassDescriptor ownerDescriptor = kind == ClassKind.OBJECT
                                           ? classDescriptor
                                           : DescriptorUtils.getParentOfType(classDescriptor, ClassDescriptor.class);
+
         assert ownerDescriptor != null : "Owner not found for class: " + classDescriptor;
+
+        if (kind == ClassKind.CLASS_OBJECT &&
+                (DescriptorUtils.getFqName(ownerDescriptor).asString().equals("kotlin.Int") || DescriptorUtils.getFqName(ownerDescriptor).asString().equals("kotlin.Double"))) {
+            Name name = Name.identifier(ownerDescriptor.getName().asString() + "DefaultObjectImpl");
+            DeclarationDescriptor intDefaultDescriptor = null;
+
+            for (DeclarationDescriptor descriptor : KotlinBuiltIns.getInstance().getNumberDefaultObjects()) {
+                if (descriptor.getName().equals(name)) {
+                    intDefaultDescriptor = descriptor;
+                    break;
+                }
+            }
+
+            assert intDefaultDescriptor != null : "Can find build in object";
+            return createForSingleton((ClassDescriptor) intDefaultDescriptor, typeMapper);
+        }
+
         Type ownerType = typeMapper.mapType(ownerDescriptor);
 
         String fieldName = kind == ClassKind.ENUM_ENTRY

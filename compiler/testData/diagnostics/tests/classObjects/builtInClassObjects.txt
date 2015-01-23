@@ -1,0 +1,6 @@
+package
+
+package test {
+    internal val d: kotlin.Double.<class-object-for-Double>
+    internal val i: kotlin.Int.<class-object-for-Int>
+}

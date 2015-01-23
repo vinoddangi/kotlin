@@ -27,6 +27,8 @@ public abstract class Number {
 }
 
 public class Double private () : Number, Comparable<Double> {
+    class object : DoubleDefaultObject {}
+
     public override fun compareTo(other: Double): Int
     public fun compareTo(other: Float): Int
     public fun compareTo(other: Long) : Int
@@ -247,6 +249,8 @@ public class Long private () : Number, Comparable<Long> {
 }
 
 public class Int private () : Number, Comparable<Int> {
+    class object : IntDefaultObject {}
+
     public fun compareTo(other: Double): Int
     public fun compareTo(other: Float) : Int
     public fun compareTo(other: Long)  : Int
