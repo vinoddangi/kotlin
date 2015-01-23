@@ -229,6 +229,7 @@ class MapTest {
         assertEquals(3, filteredByValue["b"])
     }
 
+/*
     test fun plusAssign() {
         val extended = hashMapOf(Pair("b", 3))
         extended += ("c" to 2)
@@ -236,6 +237,7 @@ class MapTest {
         assertEquals(2, extended["c"])
         assertEquals(3, extended["b"])
     }
+*/
 
     test fun plus() {
         val original = mapOf("A" to 1, "B" to 2)
