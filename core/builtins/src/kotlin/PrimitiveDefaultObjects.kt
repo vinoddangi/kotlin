@@ -16,9 +16,9 @@
 
 package kotlin
 
-// Can contain only methods that are common for all platforms
-public trait IntDefaultObject
-public trait DoubleDefaultObject
+public trait Parsable<T> {
+    fun parse(str: String): T
+}
 
-public object IntDefaultObjectImpl : IntDefaultObject
-public object DoubleDefaultObjectImpl : DoubleDefaultObject
+public trait DoubleDefaultObject
+public trait IntDefaultObject

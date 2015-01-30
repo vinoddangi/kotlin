@@ -224,15 +224,6 @@ public class KotlinBuiltIns {
         return (ClassDescriptor) classifier;
     }
 
-    //public ClassDescriptor getInternalBuiltInClassByName(@NotNull Name simpleName) {
-    //    PackageViewDescriptor internalPackage = getBuiltInsPackageFragment().getMemberScope().getPackage(Name.identifier("internal"));
-    //    assert internalPackage != null : "'internal' package must be present in builtins";
-    //
-    //    ClassifierDescriptor classifier = internalPackage.getMemberScope().getClassifier(simpleName);
-    //    assert classifier instanceof ClassDescriptor : "Must be a class descriptor " + simpleName + ", but was " + classifier;
-    //    return (ClassDescriptor) classifier;
-    //}
-
     @NotNull
     private ClassDescriptor getBuiltInClassByName(@NotNull String simpleName) {
         return getBuiltInClassByName(Name.identifier(simpleName));
@@ -306,13 +297,6 @@ public class KotlinBuiltIns {
                 getBuiltInClassByName("ShortRange"),
                 getBuiltInClassByName("CharRange"),
                 getBuiltInClassByName("IntRange")
-        );
-    }
-
-    public Set<DeclarationDescriptor> getNumberDefaultObjects() {
-        return KotlinPackage.<DeclarationDescriptor>setOf(
-                getBuiltInClassByName("IntDefaultObjectImpl"),
-                getBuiltInClassByName("DoubleDefaultObjectImpl")
         );
     }
 

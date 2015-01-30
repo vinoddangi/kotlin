@@ -295,19 +295,11 @@ public class JetTypeMapper {
             if (containingDeclaration instanceof ClassDescriptor &&
                 KotlinBuiltIns.isPrimitiveType(((ClassDescriptor) containingDeclaration).getDefaultType())) {
 
+
                 Name name = Name.identifier(containingDeclaration.getName().asString() + "DefaultObjectImpl");
+                FqName fqName = new FqName("kotlin.jvm").child(name);
 
-                ClassDescriptor defaultObjectDescriptor = null;
-                for (DeclarationDescriptor defaultObject : KotlinBuiltIns.getInstance().getNumberDefaultObjects()) {
-                    if (defaultObject.getName().equals(name)) {
-                        defaultObjectDescriptor = (ClassDescriptor) defaultObject;
-                        break;
-                    }
-                }
-
-                if (defaultObjectDescriptor != null) {
-                    return mapType(defaultObjectDescriptor.getDefaultType(), signatureVisitor, kind, howThisTypeIsUsed, arrayParameter);
-                }
+                return AsmUtil.asmTypeByFqNameWithoutInnerClasses(fqName);
             }
         }
 
