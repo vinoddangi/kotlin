@@ -33,8 +33,8 @@ public interface JetClassOrObject extends PsiNameIdentifierOwner, JetDeclaration
     @NotNull
     List<JetClassInitializer> getAnonymousInitializers();
 
-    // Objects always "have" a primary constructor
-    boolean hasPrimaryConstructor();
+    // Objects always "doesn't have" an explicit primary constructor
+    boolean hasExplicitPrimaryConstructor();
 
     @Override
     @Nullable

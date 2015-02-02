@@ -123,8 +123,8 @@ public class JetObjectDeclaration extends JetNamedDeclarationStub<KotlinObjectSt
     }
 
     @Override
-    public boolean hasPrimaryConstructor() {
-        return true;
+    public boolean hasExplicitPrimaryConstructor() {
+        return false;
     }
 
     @Override
