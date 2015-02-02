@@ -880,6 +880,11 @@ public class JetParsing extends AbstractJetParsing {
             myExpressionParsing.parseValueArgumentList();
 
             delegationCall.done(CONSTRUCTOR_DELEGATION_CALL);
+        } else {
+            // empty constructor delegation call
+            PsiBuilder.Marker emptyDelegationCall = mark();
+            mark().done(CONSTRUCTOR_DELEGATION_REFERENCE);
+            emptyDelegationCall.done(CONSTRUCTOR_DELEGATION_CALL);
         }
 
         parseBlock();

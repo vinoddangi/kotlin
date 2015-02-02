@@ -15,6 +15,9 @@ JetFile: basic.kt
           PsiElement(LPAR)('(')
           PsiElement(RPAR)(')')
         PsiWhiteSpace(' ')
+        CONSTRUCTOR_DELEGATION_CALL
+          CONSTRUCTOR_DELEGATION_REFERENCE
+            <empty list>
         BLOCK
           PsiElement(LBRACE)('{')
           PsiElement(RBRACE)('}')
@@ -54,6 +57,9 @@ JetFile: basic.kt
                   PsiElement(IDENTIFIER)('Int')
           PsiElement(RPAR)(')')
         PsiWhiteSpace(' ')
+        CONSTRUCTOR_DELEGATION_CALL
+          CONSTRUCTOR_DELEGATION_REFERENCE
+            <empty list>
         BLOCK
           PsiElement(LBRACE)('{')
           PsiElement(RBRACE)('}')

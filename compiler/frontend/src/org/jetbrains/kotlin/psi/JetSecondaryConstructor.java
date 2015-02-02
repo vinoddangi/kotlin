@@ -164,4 +164,9 @@ public class JetSecondaryConstructor extends JetDeclarationStub<KotlinPlaceHolde
     public PsiElement setName(@NotNull String name) throws IncorrectOperationException {
         throw new IncorrectOperationException("setName to constructor");
     }
+
+    @Nullable
+    public JetConstructorDelegationCall getDelegationCall() {
+        return getStubOrPsiChild(JetStubElementTypes.CONSTRUCTOR_DELEGATION_CALL);
+    }
 }
