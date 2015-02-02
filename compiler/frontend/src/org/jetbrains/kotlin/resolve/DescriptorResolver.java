@@ -1310,7 +1310,7 @@ public class DescriptorResolver {
             @NotNull JetClass classElement,
             BindingTrace trace
     ) {
-        if (classDescriptor.getKind() == ClassKind.ENUM_ENTRY) return null;
+        if (classDescriptor.getKind() == ClassKind.ENUM_ENTRY || !classElement.hasPrimaryConstructor()) return null;
         return createConstructorDescriptor(
                 scope,
                 classDescriptor,
@@ -1318,6 +1318,42 @@ public class DescriptorResolver {
                 classElement.getPrimaryConstructorModifierList(),
                 classElement,
                 classDescriptor.getTypeConstructor().getParameters(), classElement.getPrimaryConstructorParameters(), trace);
+    }
+
+    @NotNull
+    public List<ConstructorDescriptorImpl> resolveSecondaryConstructorDescriptors(
+        @NotNull JetScope scope,
+        @NotNull ClassDescriptor classDescriptor,
+        @NotNull JetClass classElement,
+        BindingTrace trace
+    ) {
+        if (classDescriptor.getKind() == ClassKind.ENUM_ENTRY) return Collections.emptyList();
+
+        List<ConstructorDescriptorImpl> result = new ArrayList<ConstructorDescriptorImpl>();
+
+        for (JetSecondaryConstructor constructor : classElement.getSecondaryConstructors()) {
+            result.add(resolveSecondaryConstructorDescriptor(scope, classDescriptor, constructor, trace));
+        }
+
+        return result;
+    }
+
+    @NotNull
+    private ConstructorDescriptorImpl resolveSecondaryConstructorDescriptor(
+            @NotNull JetScope scope,
+            @NotNull ClassDescriptor classDescriptor,
+            @NotNull JetSecondaryConstructor constructor,
+            BindingTrace trace
+    ) {
+        return createConstructorDescriptor(
+                scope,
+                classDescriptor,
+                false,
+                constructor.getModifierList(),
+                constructor,
+                Collections.<TypeParameterDescriptor>emptyList(),
+                constructor.getValueParameters(), trace
+        );
     }
 
     @NotNull

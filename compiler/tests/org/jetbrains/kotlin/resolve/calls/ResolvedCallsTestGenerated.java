@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 @SuppressWarnings("all")
 @TestMetadata("compiler/testData/resolvedCalls")
 @TestDataPath("$PROJECT_ROOT")
-@InnerTestClasses({ResolvedCallsTestGenerated.Arguments.class, ResolvedCallsTestGenerated.DifferentCallElements.class, ResolvedCallsTestGenerated.Dynamic.class, ResolvedCallsTestGenerated.FunctionTypes.class, ResolvedCallsTestGenerated.Invoke.class, ResolvedCallsTestGenerated.ObjectsAndClassObjects.class, ResolvedCallsTestGenerated.RealExamples.class, ResolvedCallsTestGenerated.Resolve.class, ResolvedCallsTestGenerated.ThisOrSuper.class})
+@InnerTestClasses({ResolvedCallsTestGenerated.Arguments.class, ResolvedCallsTestGenerated.DifferentCallElements.class, ResolvedCallsTestGenerated.Dynamic.class, ResolvedCallsTestGenerated.FunctionTypes.class, ResolvedCallsTestGenerated.Invoke.class, ResolvedCallsTestGenerated.ObjectsAndClassObjects.class, ResolvedCallsTestGenerated.RealExamples.class, ResolvedCallsTestGenerated.Resolve.class, ResolvedCallsTestGenerated.SecondaryConstructors.class, ResolvedCallsTestGenerated.ThisOrSuper.class})
 @RunWith(JUnit3RunnerWithInners.class)
 public class ResolvedCallsTestGenerated extends AbstractResolvedCallsTest {
     public void testAllFilesPresentInResolvedCalls() throws Exception {
@@ -508,6 +508,75 @@ public class ResolvedCallsTestGenerated extends AbstractResolvedCallsTest {
         @TestMetadata("mostSpecificWithLambda.kt")
         public void testMostSpecificWithLambda() throws Exception {
             String fileName = JetTestUtils.navigationMetadata("compiler/testData/resolvedCalls/resolve/mostSpecificWithLambda.kt");
+            doTest(fileName);
+        }
+    }
+
+    @TestMetadata("compiler/testData/resolvedCalls/secondaryConstructors")
+    @TestDataPath("$PROJECT_ROOT")
+    @RunWith(JUnit3RunnerWithInners.class)
+    public static class SecondaryConstructors extends AbstractResolvedCallsTest {
+        public void testAllFilesPresentInSecondaryConstructors() throws Exception {
+            JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), new File("compiler/testData/resolvedCalls/secondaryConstructors"), Pattern.compile("^(.+)\\.kt$"), true);
+        }
+
+        @TestMetadata("explicitPrimaryArgs.kt")
+        public void testExplicitPrimaryArgs() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/resolvedCalls/secondaryConstructors/explicitPrimaryArgs.kt");
+            doTest(fileName);
+        }
+
+        @TestMetadata("explicitPrimaryCallSecondary.kt")
+        public void testExplicitPrimaryCallSecondary() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/resolvedCalls/secondaryConstructors/explicitPrimaryCallSecondary.kt");
+            doTest(fileName);
+        }
+
+        @TestMetadata("explicitPrimaryNoArgs.kt")
+        public void testExplicitPrimaryNoArgs() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/resolvedCalls/secondaryConstructors/explicitPrimaryNoArgs.kt");
+            doTest(fileName);
+        }
+
+        @TestMetadata("implicitPrimary.kt")
+        public void testImplicitPrimary() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/resolvedCalls/secondaryConstructors/implicitPrimary.kt");
+            doTest(fileName);
+        }
+
+        @TestMetadata("overload1.kt")
+        public void testOverload1() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/resolvedCalls/secondaryConstructors/overload1.kt");
+            doTest(fileName);
+        }
+
+        @TestMetadata("overload2.kt")
+        public void testOverload2() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/resolvedCalls/secondaryConstructors/overload2.kt");
+            doTest(fileName);
+        }
+
+        @TestMetadata("overload3.kt")
+        public void testOverload3() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/resolvedCalls/secondaryConstructors/overload3.kt");
+            doTest(fileName);
+        }
+
+        @TestMetadata("overloadDefault.kt")
+        public void testOverloadDefault() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/resolvedCalls/secondaryConstructors/overloadDefault.kt");
+            doTest(fileName);
+        }
+
+        @TestMetadata("overloadNamed.kt")
+        public void testOverloadNamed() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/resolvedCalls/secondaryConstructors/overloadNamed.kt");
+            doTest(fileName);
+        }
+
+        @TestMetadata("simple.kt")
+        public void testSimple() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/resolvedCalls/secondaryConstructors/simple.kt");
             doTest(fileName);
         }
     }
