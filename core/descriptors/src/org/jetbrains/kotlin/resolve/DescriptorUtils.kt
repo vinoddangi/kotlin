@@ -21,6 +21,7 @@ import org.jetbrains.kotlin.resolve.DescriptorUtils
 import org.jetbrains.kotlin.descriptors.ClassKind.*
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.ClassId
+import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 
 public fun ClassDescriptor.getClassObjectReferenceTarget(): ClassDescriptor = getDefaultObjectDescriptor() ?: this
 
@@ -69,3 +70,13 @@ public val ClassDescriptor.classObjectDescriptor: ClassDescriptor?
             else -> getDefaultObjectDescriptor()
         }
     }
+
+public fun ClassDescriptor.getSuperClass(): ClassDescriptor {
+    for (supertype in getDefaultType().getConstructor().getSupertypes()) {
+        val superClassifier = supertype.getConstructor().getDeclarationDescriptor()
+        if (DescriptorUtils.isClass(superClassifier) || DescriptorUtils.isEnumClass(superClassifier)) {
+            return superClassifier as ClassDescriptor
+        }
+    }
+    return KotlinBuiltIns.getInstance().getAny()
+}

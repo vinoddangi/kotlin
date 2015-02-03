@@ -591,6 +591,11 @@ public abstract class ElementResolver {
         }
 
         @Override
+        public Map<JetSecondaryConstructor, ConstructorDescriptor> getSecondaryConstructors() {
+            return Collections.emptyMap();
+        }
+
+        @Override
         public Map<JetProperty, PropertyDescriptor> getProperties() {
             return Collections.emptyMap();
         }

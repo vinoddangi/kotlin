@@ -20,6 +20,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.containers.Queue;
+import kotlin.Function1;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.descriptors.*;
@@ -44,6 +45,7 @@ import static org.jetbrains.kotlin.descriptors.ReceiverParameterDescriptor.NO_RE
 import static org.jetbrains.kotlin.diagnostics.Errors.*;
 import static org.jetbrains.kotlin.resolve.BindingContext.DEFERRED_TYPE;
 import static org.jetbrains.kotlin.types.TypeUtils.NO_EXPECTED_TYPE;
+import static org.jetbrains.kotlin.types.TypeUtils.dependsOnTypeConstructors;
 
 public class BodyResolver {
     private ScriptBodyResolver scriptBodyResolverResolver;
@@ -111,6 +113,7 @@ public class BodyResolver {
         }
         resolveAnonymousInitializers(c);
         resolvePrimaryConstructorParameters(c);
+        resolveSecondaryConstructors(c);
 
         resolveFunctionBodies(c);
 
@@ -120,6 +123,50 @@ public class BodyResolver {
         if (!c.getTopDownAnalysisParameters().isDeclaredLocally()) {
             computeDeferredTypes();
         }
+    }
+
+    private void resolveSecondaryConstructors(@NotNull BodiesResolveContext c) {
+        for (Map.Entry<JetSecondaryConstructor, ConstructorDescriptor> entry : c.getSecondaryConstructors().entrySet()) {
+            resolveSecondaryConstructorBody(c, entry.getKey(), entry.getValue());
+        }
+    }
+
+    private void resolveSecondaryConstructorBody(
+            @NotNull final BodiesResolveContext c,
+            @NotNull final JetSecondaryConstructor constructor,
+            @NotNull ConstructorDescriptor descriptor
+    ) {
+        JetScope bodyDeclaringScope = c.getDeclaringScopes().apply(constructor);
+        assert bodyDeclaringScope != null;
+
+        assert descriptor.getContainingDeclaration() instanceof ClassDescriptorWithResolutionScopes
+                : "When resolving body it should be class descriptor with resolution scopes";
+
+        ClassDescriptorWithResolutionScopes classDescriptor = (ClassDescriptorWithResolutionScopes) descriptor.getContainingDeclaration();
+
+        resolveFunctionBody(c, trace, constructor, descriptor, bodyDeclaringScope,
+                            classDescriptor.getScopeForSecondaryConstructorHeaderResolution(),
+        new Function1<JetScope, Void>() {
+            @Override
+            public Void invoke(@NotNull JetScope headerInnerScope) {
+                resolveSecondaryConstructorDelegationCall(c, headerInnerScope, constructor);
+                return null;
+            }
+        });
+    }
+
+    private void resolveSecondaryConstructorDelegationCall(
+            @NotNull BodiesResolveContext c,
+            @NotNull JetScope scope,
+            @NotNull JetSecondaryConstructor constructor
+    ) {
+        JetConstructorDelegationCall call = constructor.getDelegationCall();
+        if (call == null) return;
+
+        callResolver.resolveFunctionCall(
+                trace, scope,
+                CallMaker.makeCall(ReceiverValue.NO_RECEIVER, null, call), NO_EXPECTED_TYPE, c.getOuterDataFlowInfo(), false
+        );
     }
 
     public void resolveBodies(@NotNull BodiesResolveContext c) {
@@ -551,7 +598,8 @@ public class BodyResolver {
         JetType expectedTypeForInitializer = property.getTypeReference() != null ? propertyDescriptor.getType() : NO_EXPECTED_TYPE;
         CompileTimeConstant<?> compileTimeInitializer = propertyDescriptor.getCompileTimeInitializer();
         if (compileTimeInitializer == null) {
-            expressionTypingServices.getType(propertyDeclarationInnerScope, initializer, expectedTypeForInitializer, c.getOuterDataFlowInfo(), trace);
+            expressionTypingServices.getType(propertyDeclarationInnerScope, initializer, expectedTypeForInitializer,
+                                             c.getOuterDataFlowInfo(), trace);
         }
     }
 
@@ -588,20 +636,39 @@ public class BodyResolver {
             @NotNull FunctionDescriptor functionDescriptor,
             @NotNull JetScope declaringScope
     ) {
-        JetScope functionInnerScope = FunctionDescriptorUtil.getFunctionInnerScope(declaringScope, functionDescriptor, trace);
+        resolveFunctionBody(c, trace, function, functionDescriptor, declaringScope, null, null);
+    }
 
+    public void resolveFunctionBody(
+            @NotNull BodiesResolveContext c,
+            @NotNull BindingTrace trace,
+            @NotNull JetDeclarationWithBody function,
+            @NotNull FunctionDescriptor functionDescriptor,
+            @NotNull JetScope bodyDeclaringScope,
+            @Nullable JetScope headerDeclaringScope,
+            @Nullable Function1<JetScope, Void> beforeBlockBody
+    ) {
+        JetScope headerInnerScope = FunctionDescriptorUtil.getFunctionInnerScope(
+                headerDeclaringScope == null ? bodyDeclaringScope : headerDeclaringScope, functionDescriptor, trace);
         List<JetParameter> valueParameters = function.getValueParameters();
         List<ValueParameterDescriptor> valueParameterDescriptors = functionDescriptor.getValueParameters();
 
         boolean needCompleteAnalysis = c.completeAnalysisNeeded(function);
 
-        expressionTypingServices.resolveValueParameters(valueParameters, valueParameterDescriptors, functionInnerScope,
+        expressionTypingServices.resolveValueParameters(valueParameters, valueParameterDescriptors, headerInnerScope,
                                                         c.getOuterDataFlowInfo(), trace, needCompleteAnalysis);
 
         if (!needCompleteAnalysis) return;
 
+        if (beforeBlockBody != null) {
+            beforeBlockBody.invoke(headerInnerScope);
+        }
+
+        JetScope bodyInnerScope = headerDeclaringScope == null ? headerInnerScope :
+                                  FunctionDescriptorUtil.getFunctionInnerScope(bodyDeclaringScope, functionDescriptor, trace);
+
         if (function.hasBody()) {
-            expressionTypingServices.checkFunctionReturnType(functionInnerScope, function, functionDescriptor, c.getOuterDataFlowInfo(), null, trace);
+            expressionTypingServices.checkFunctionReturnType(bodyInnerScope, function, functionDescriptor, c.getOuterDataFlowInfo(), null, trace);
         }
 
         assert functionDescriptor.getReturnType() != null;
