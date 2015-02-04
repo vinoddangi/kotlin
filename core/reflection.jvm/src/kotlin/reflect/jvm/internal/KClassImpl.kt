@@ -38,9 +38,16 @@ class KClassImpl<T>(override val jClass: Class<T>) : KCallableContainerImpl(), K
 
     val descriptor by ReflectProperties.lazySoft {(): ClassDescriptor ->
         val moduleData = jClass.getOrCreateModule()
+        val classId = jClass.classId
 
-        val found = moduleData.module.findClassAcrossModuleDependencies(jClass.classId)
-        if (found != null) return@lazySoft found
+        if (classId.isLocal()) {
+            val local = moduleData.deserializationComponents.deserializeClass(classId)
+            if (local != null) return@lazySoft local
+        }
+        else {
+            val found = moduleData.module.findClassAcrossModuleDependencies(classId)
+            if (found != null) return@lazySoft found
+        }
 
         throw KotlinReflectionInternalError("Class not resolved: $jClass")
     }
