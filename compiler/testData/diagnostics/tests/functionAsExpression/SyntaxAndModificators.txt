@@ -1,0 +1,35 @@
+package
+
+internal val defaultParam: (kotlin.Int) -> kotlin.Unit
+internal val extensionWithName: A.() -> kotlin.Unit
+internal val extensionWithoutName: A.() -> kotlin.Unit
+internal val extension_generic_fun: [ERROR : T].(T) -> T
+internal val final_fun: [ERROR : Type for final]
+internal val funfun: () -> () -> kotlin.Int
+internal val generic_fun: (T) -> T
+internal val ok: kotlin.String = "OK"
+internal val open_fun: [ERROR : Type for open]
+internal val public_fun: [ERROR : Type for public]
+internal val vararg_fun: (kotlin.IntArray) -> kotlin.Unit
+internal val withAnnotation: () -> kotlin.Unit
+internal val withExpression: () -> kotlin.Int
+internal val withName: () -> kotlin.Unit
+internal val withReturn: () -> kotlin.Int
+internal val withoutBody: () -> kotlin.Unit
+internal val withoutName: () -> kotlin.Unit
+internal fun </*0*/ T> fun_with_where(): () -> kotlin.Unit
+
+internal final class A {
+    public constructor A()
+    public open override /*1*/ /*fake_override*/ fun equals(/*0*/ other: kotlin.Any?): kotlin.Boolean
+    public open override /*1*/ /*fake_override*/ fun hashCode(): kotlin.Int
+    public open override /*1*/ /*fake_override*/ fun toString(): kotlin.String
+}
+
+internal final annotation class ann : kotlin.Annotation {
+    public constructor ann(/*0*/ name: kotlin.String)
+    internal final val name: kotlin.String
+    public open override /*1*/ /*fake_override*/ fun equals(/*0*/ other: kotlin.Any?): kotlin.Boolean
+    public open override /*1*/ /*fake_override*/ fun hashCode(): kotlin.Int
+    public open override /*1*/ /*fake_override*/ fun toString(): kotlin.String
+}
