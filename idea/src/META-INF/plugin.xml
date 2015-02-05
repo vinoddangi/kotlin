@@ -276,6 +276,8 @@
                             id="JetCompletionContributor"
                             order="first"
                             implementationClass="org.jetbrains.kotlin.idea.completion.KotlinCompletionContributor"/>
+    <completion.contributor language="jet"
+                            implementationClass="org.jetbrains.kotlin.idea.kdoc.KDocCompletionContributor"/>
 
     <completion.confidence language="jet" implementationClass="com.intellij.codeInsight.completion.UnfocusedNameIdentifier"/>
     <completion.confidence language="jet"
@@ -788,6 +790,16 @@
 
     <intentionAction>
       <className>org.jetbrains.kotlin.idea.intentions.ConvertToConcatenatedStringIntention</className>
+      <category>Kotlin</category>
+    </intentionAction>
+
+    <intentionAction>
+      <className>org.jetbrains.kotlin.idea.intentions.ConvertFunctionToPropertyIntention</className>
+      <category>Kotlin</category>
+    </intentionAction>
+
+    <intentionAction>
+      <className>org.jetbrains.kotlin.idea.intentions.ConvertPropertyToFunctionIntention</className>
       <category>Kotlin</category>
     </intentionAction>
 
