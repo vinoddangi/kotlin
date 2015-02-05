@@ -85,6 +85,7 @@ public class JetExpressionParsing extends AbstractJetParsing {
             NULL_KEYWORD,
 
             LBRACE, // functionLiteral
+            FUN_KEYWORD, // expression function
 
             LPAR, // tuple
 
