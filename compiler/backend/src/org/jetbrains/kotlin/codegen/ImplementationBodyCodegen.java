@@ -1061,10 +1061,8 @@ public class ImplementationBodyCodegen extends ClassBodyCodegen {
     private void generatePrimaryConstructor(final DelegationFieldsInfo delegationFieldsInfo) {
         if (ignoreIfTraitOrAnnotation()) return;
 
-        Collection<ConstructorDescriptor> constructors = descriptor.getConstructors();
-        assert constructors.size() == 1 : "Unexpected number of constructors for class: " + descriptor + " " + constructors;
-
-        ConstructorDescriptor constructorDescriptor = KotlinPackage.single(constructors);
+        ConstructorDescriptor constructorDescriptor = descriptor.getUnsubstitutedPrimaryConstructor();
+        if (constructorDescriptor == null) return;
 
         ConstructorContext constructorContext = context.intoConstructor(constructorDescriptor);
 
