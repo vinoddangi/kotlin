@@ -88,7 +88,7 @@ public class JetSecondaryConstructor extends JetDeclarationStub<KotlinPlaceHolde
     @Nullable
     @Override
     public JetExpression getBodyExpression() {
-        return null;
+        return findChildByClass(JetBlockExpression.class);
     }
 
     @Nullable
@@ -99,12 +99,12 @@ public class JetSecondaryConstructor extends JetDeclarationStub<KotlinPlaceHolde
 
     @Override
     public boolean hasBlockBody() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean hasBody() {
-        return false;
+        return true;
     }
 
     @Override
@@ -151,7 +151,7 @@ public class JetSecondaryConstructor extends JetDeclarationStub<KotlinPlaceHolde
     @Nullable
     @Override
     public Name getNameAsName() {
-        return null;
+        return getNameAsSafeName();
     }
 
     @Nullable
@@ -162,6 +162,6 @@ public class JetSecondaryConstructor extends JetDeclarationStub<KotlinPlaceHolde
 
     @Override
     public PsiElement setName(@NotNull String name) throws IncorrectOperationException {
-        return null;
+        throw new IncorrectOperationException("setName to constructor");
     }
 }
