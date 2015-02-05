@@ -4368,6 +4368,12 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
                 JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), new File("compiler/testData/diagnostics/tests/functionAsExpression"), Pattern.compile("^(.+)\\.kt$"), true);
             }
 
+            @TestMetadata("Common.kt")
+            public void testCommon() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/functionAsExpression/Common.kt");
+                doTest(fileName);
+            }
+
             @TestMetadata("ForbiddenNonLocalReturn.kt")
             public void testForbiddenNonLocalReturn() throws Exception {
                 String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/functionAsExpression/ForbiddenNonLocalReturn.kt");
@@ -4377,6 +4383,18 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
             @TestMetadata("FunctionType.kt")
             public void testFunctionType() throws Exception {
                 String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/functionAsExpression/FunctionType.kt");
+                doTest(fileName);
+            }
+
+            @TestMetadata("NoOverloadError.kt")
+            public void testNoOverloadError() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/functionAsExpression/NoOverloadError.kt");
+                doTest(fileName);
+            }
+
+            @TestMetadata("Parameters.kt")
+            public void testParameters() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/functionAsExpression/Parameters.kt");
                 doTest(fileName);
             }
 
@@ -4398,9 +4416,21 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
                 doTest(fileName);
             }
 
-            @TestMetadata("SyntaxAndModificators.kt")
-            public void testSyntaxAndModificators() throws Exception {
-                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/functionAsExpression/SyntaxAndModificators.kt");
+            @TestMetadata("WithGenericParameters.kt")
+            public void testWithGenericParameters() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/functionAsExpression/WithGenericParameters.kt");
+                doTest(fileName);
+            }
+
+            @TestMetadata("WithOuterGeneric.kt")
+            public void testWithOuterGeneric() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/functionAsExpression/WithOuterGeneric.kt");
+                doTest(fileName);
+            }
+
+            @TestMetadata("WithoutBody.kt")
+            public void testWithoutBody() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/functionAsExpression/WithoutBody.kt");
                 doTest(fileName);
             }
         }

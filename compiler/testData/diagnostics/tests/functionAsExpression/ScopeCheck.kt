@@ -16,5 +16,5 @@ fun test(param: String) {
     }
 
     <!UNRESOLVED_REFERENCE!>inner_bar<!>
-
+    <!UNRESOLVED_REFERENCE!>fun_param<!>
 }
