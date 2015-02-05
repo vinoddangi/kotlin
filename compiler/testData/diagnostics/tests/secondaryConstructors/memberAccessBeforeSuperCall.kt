@@ -1,6 +1,6 @@
 // !DIAGNOSTICS: -UNUSED_PARAMETER
 open class B(open val parentProperty: Int)
-class A : <!SUPERTYPE_NOT_INITIALIZED!>B<!> {
+class A : B {
     val myProp: Int = 1
     override val parentProperty: Int = 2
     constructor(arg: Int = <!UNRESOLVED_REFERENCE!>myProp<!>): super(<!UNRESOLVED_REFERENCE!>myProp<!>) {}
