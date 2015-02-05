@@ -30,7 +30,7 @@ import kotlin.platform.platformStatic
 public object PositioningStrategies {
     private open class DeclarationHeader<T : JetDeclaration> : PositioningStrategy<T>() {
         override fun isValid(element: T): Boolean {
-            if (element is JetNamedDeclaration && element !is JetObjectDeclaration) {
+            if (element is JetNamedDeclaration && element !is JetObjectDeclaration && element !is JetNamedFunction) {
                 if (element.getNameIdentifier() == null) {
                     return false
                 }
@@ -108,6 +108,9 @@ public object PositioningStrategies {
                     return markRange(start, objectKeyword)
                 }
                 return markElement(objectKeyword)
+            }
+            if (element is JetNamedFunction) {
+                return DECLARATION_SIGNATURE.mark(element)
             }
             return super.mark(element)
         }
