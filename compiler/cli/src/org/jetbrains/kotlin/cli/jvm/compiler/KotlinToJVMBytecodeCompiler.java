@@ -48,7 +48,6 @@ import org.jetbrains.kotlin.context.ContextPackage;
 import org.jetbrains.kotlin.descriptors.impl.ModuleDescriptorImpl;
 import org.jetbrains.kotlin.idea.MainFunctionDetector;
 import org.jetbrains.kotlin.load.kotlin.PackageClassUtils;
-import org.jetbrains.kotlin.load.kotlin.incremental.IncrementalPackage;
 import org.jetbrains.kotlin.load.kotlin.incremental.cache.IncrementalCache;
 import org.jetbrains.kotlin.load.kotlin.incremental.cache.IncrementalCacheProvider;
 import org.jetbrains.kotlin.name.FqName;
@@ -59,15 +58,14 @@ import org.jetbrains.kotlin.resolve.AnalyzerScriptParameter;
 import org.jetbrains.kotlin.resolve.BindingTrace;
 import org.jetbrains.kotlin.resolve.BindingTraceContext;
 import org.jetbrains.kotlin.resolve.ScriptNameUtil;
+import org.jetbrains.kotlin.resolve.jvm.JvmClassName;
 import org.jetbrains.kotlin.resolve.jvm.TopDownAnalyzerFacadeForJVM;
 import org.jetbrains.kotlin.utils.KotlinPaths;
 
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class KotlinToJVMBytecodeCompiler {
 
@@ -338,13 +336,16 @@ public class KotlinToJVMBytecodeCompiler {
         CompilerConfiguration configuration = environment.getConfiguration();
         IncrementalCacheProvider incrementalCacheProvider = configuration.get(JVMConfigurationKeys.INCREMENTAL_CACHE_PROVIDER);
 
-        Collection<FqName> packagesWithRemovedFiles;
+        Collection<FqName> packagesWithObsoleteParts;
         if (moduleId == null || incrementalCacheProvider == null) {
-            packagesWithRemovedFiles = null;
+            packagesWithObsoleteParts = null;
         }
         else {
             IncrementalCache incrementalCache = incrementalCacheProvider.getIncrementalCache(moduleId);
-            packagesWithRemovedFiles = IncrementalPackage.getPackagesWithRemovedFiles(incrementalCache, environment.getSourceFiles());
+            packagesWithObsoleteParts = new HashSet<FqName>();
+            for (String internalName : incrementalCache.getObsoletePackageParts()) {
+                packagesWithObsoleteParts.add(JvmClassName.byInternalName(internalName).getPackageFqName());
+            }
         }
         BindingTraceContext diagnosticHolder = new BindingTraceContext();
         GenerationState generationState = new GenerationState(
@@ -359,7 +360,7 @@ public class KotlinToJVMBytecodeCompiler {
                 GenerationState.GenerateClassFilter.GENERATE_ALL,
                 configuration.get(JVMConfigurationKeys.DISABLE_INLINE, false),
                 configuration.get(JVMConfigurationKeys.DISABLE_OPTIMIZATION, false),
-                packagesWithRemovedFiles,
+                packagesWithObsoleteParts,
                 moduleId,
                 diagnosticHolder,
                 outputDirectory
