@@ -16,7 +16,7 @@
 
 package org.jetbrains.kotlin.js.translate.reference;
 
-import com.google.dart.compiler.backend.js.ast.JsExpression;
+import com.google.dart.compiler.backend.js.ast.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.descriptors.ClassDescriptor;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
@@ -61,7 +61,25 @@ public class ClassObjectAccessTranslator extends AbstractTranslator implements C
             this.referenceToClassObject = fqReference;
         }
         else {
-            this.referenceToClassObject = Namer.getClassObjectAccessor(fqReference);
+            if (fqReference instanceof JsNameRef &&
+                (fqReference.toString().equals("Kotlin.modules['builtins'].kotlin.Int") ||
+                 fqReference.toString().equals("Kotlin.modules['builtins'].kotlin.Double"))) {
+
+                JsNameRef reference = (JsNameRef) fqReference;
+                JsName name = reference.getName();
+
+                JsArrayAccess arrayAccess = ((JsArrayAccess) ((JsNameRef) reference.getQualifier()).getQualifier());
+
+                this.referenceToClassObject = new JsNameRef(name + "DefaultObjectImpl",
+                                                            new JsNameRef("js",
+                                                                          new JsNameRef("kotlin",
+                                                                                        new JsArrayAccess(
+                                                                                                arrayAccess.getArrayExpression(),
+                                                                                                context.program().getStringLiteral("stdlib")))));
+            }
+            else {
+                this.referenceToClassObject = Namer.getClassObjectAccessor(fqReference);
+            }
         }
     }
 

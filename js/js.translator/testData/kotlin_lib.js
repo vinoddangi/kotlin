@@ -968,4 +968,12 @@
     };
 
     Kotlin.createDefinition(lazyInitClasses, Kotlin);
+
+    Kotlin.POSITIVE_INFINITY_Double = Number.POSITIVE_INFINITY;
+    Kotlin.NEGATIVE_INFINITY_Double = Number.NEGATIVE_INFINITY;
+    Kotlin.NaN_Double = Number.NaN;
+
+    Kotlin.parseDouble = function(s) {
+        return parseFloat(s);
+    };
 })(Kotlin);
