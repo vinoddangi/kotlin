@@ -2,10 +2,10 @@ import java.util.ArrayList
 
 class C(p: Int, p2: Int)
 
-fun foo(p: Int){
+fun foo(pr: Int){
     val result = ArrayList<String>()
-    C(1, p)<caret>
+    C(1, pr)<caret>
 }
 
 // CHAR: '\t'
-// ELEMENT: p
+// ELEMENT: pr

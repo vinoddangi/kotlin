@@ -1,7 +1,7 @@
 fun foo(p: Int): Int = p
 
-fun f(p: Int): Int {
-    return p<caret>foo(1)
+fun f(pb: Int): Int {
+    return pb<caret>foo(1)
 }
 
-//ELEMENT: p
+//ELEMENT: pb
