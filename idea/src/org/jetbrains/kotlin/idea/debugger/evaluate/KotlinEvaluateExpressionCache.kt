@@ -31,6 +31,7 @@ import org.jetbrains.kotlin.resolve.DescriptorUtils
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.apache.log4j.Logger
 import org.jetbrains.kotlin.idea.util.application.runReadAction
+import org.jetbrains.kotlin.backend.common.output.OutputFile
 
 class KotlinEvaluateExpressionCache(val project: Project) {
 
@@ -84,7 +85,13 @@ class KotlinEvaluateExpressionCache(val project: Project) {
         }
     }
 
-    data class CompiledDataDescriptor(val bytecodes: ByteArray, val sourcePosition: SourcePosition, val funName: String, val parameters: ParametersDescriptor)
+    data class CompiledDataDescriptor(
+            val bytecodes: ByteArray,
+            val additionalClasses: List<Pair<String, ByteArray>>,
+            val sourcePosition: SourcePosition,
+            val funName: String,
+            val parameters: ParametersDescriptor
+    )
 
     class ParametersDescriptor : Iterable<Pair<String, JetType>> {
         private val list = ArrayList<Pair<String, JetType>>()
