@@ -20,9 +20,7 @@ import com.intellij.openapi.progress.ProcessCanceledException;
 import kotlin.Function0;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.codegen.context.ClassContext;
-import org.jetbrains.kotlin.codegen.context.CodegenContext;
-import org.jetbrains.kotlin.codegen.context.FieldOwnerContext;
+import org.jetbrains.kotlin.codegen.context.*;
 import org.jetbrains.kotlin.codegen.inline.InlineCodegenUtil;
 import org.jetbrains.kotlin.codegen.inline.NameGenerator;
 import org.jetbrains.kotlin.codegen.inline.ReifiedTypeParametersUsages;
@@ -32,6 +30,7 @@ import org.jetbrains.kotlin.descriptors.*;
 import org.jetbrains.kotlin.descriptors.annotations.Annotations;
 import org.jetbrains.kotlin.descriptors.impl.SimpleFunctionDescriptorImpl;
 import org.jetbrains.kotlin.load.java.JvmAbi;
+import org.jetbrains.kotlin.load.kotlin.PackagePartClassUtils;
 import org.jetbrains.kotlin.name.Name;
 import org.jetbrains.kotlin.name.SpecialNames;
 import org.jetbrains.kotlin.psi.*;
@@ -43,6 +42,7 @@ import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall;
 import org.jetbrains.kotlin.resolve.constants.CompileTimeConstant;
 import org.jetbrains.kotlin.resolve.constants.IntegerValueTypeConstant;
 import org.jetbrains.kotlin.resolve.constants.evaluate.ConstantExpressionEvaluator;
+import org.jetbrains.kotlin.resolve.descriptorUtil.DescriptorUtilPackage;
 import org.jetbrains.kotlin.storage.LockBasedStorageManager;
 import org.jetbrains.kotlin.storage.NotNullLazyValue;
 import org.jetbrains.kotlin.types.ErrorUtils;
@@ -250,6 +250,50 @@ public abstract class MemberCodegen<T extends JetElement/* TODO: & JetDeclaratio
         v.visitInnerClass(innerClassInternalName, outerClassInternalName, innerName, calculateInnerClassAccessFlags(innerClass));
     }
 
+    protected void writeOuterClassAndEnclosingMethod() {
+        CodegenContext context = this.context.getParentContext();
+        while (context instanceof MethodContext && ((MethodContext) context).isInliningLambda()) {
+            // If this is a lambda which will be inlined, skip its MethodContext and enclosing ClosureContext
+            //noinspection ConstantConditions
+            context = context.getParentContext().getParentContext();
+        }
+        assert context != null : "Outermost context can't be null: " + this.context;
+
+        Type enclosingAsmType = computeOuterClass(context);
+        if (enclosingAsmType != null) {
+            Method method = computeEnclosingMethod(context);
+
+            v.visitOuterClass(
+                    enclosingAsmType.getInternalName(),
+                    method == null ? null : method.getName(),
+                    method == null ? null : method.getDescriptor()
+            );
+        }
+    }
+
+    @Nullable
+    private Type computeOuterClass(@NotNull CodegenContext<?> context) {
+        CodegenContext<? extends ClassOrPackageFragmentDescriptor> outermost = context.getClassOrPackageParentContext();
+        if (outermost instanceof ClassContext) {
+            return typeMapper.mapType(((ClassContext) outermost).getContextDescriptor());
+        }
+        else if (outermost instanceof PackageContext && !(outermost instanceof PackageFacadeContext)) {
+            return PackagePartClassUtils.getPackagePartType(element.getContainingJetFile());
+        }
+        return null;
+    }
+
+    @Nullable
+    private Method computeEnclosingMethod(@NotNull CodegenContext context) {
+        if (context instanceof MethodContext) {
+            Method method = typeMapper.mapSignature(((MethodContext) context).getFunctionDescriptor()).getAsmMethod();
+            if (!method.getName().equals("<clinit>")) {
+                return method;
+            }
+        }
+        return null;
+    }
+
     @NotNull
     public NameGenerator getInlineNameGenerator() {
         if (inlineNameGenerator == null) {
@@ -267,7 +311,9 @@ public abstract class MemberCodegen<T extends JetElement/* TODO: & JetDeclaratio
             SimpleFunctionDescriptorImpl clInit =
                     SimpleFunctionDescriptorImpl.create(descriptor, Annotations.EMPTY, Name.special("<clinit>"), SYNTHESIZED, NO_SOURCE);
             clInit.initialize(null, null, Collections.<TypeParameterDescriptor>emptyList(),
-                              Collections.<ValueParameterDescriptor>emptyList(), null, null, Visibilities.PRIVATE);
+                              Collections.<ValueParameterDescriptor>emptyList(),
+                              DescriptorUtilPackage.getModule(descriptor).getBuiltIns().getUnitType(),
+                              null, Visibilities.PRIVATE);
 
             this.clInit = new ExpressionCodegen(mv, new FrameMap(), Type.VOID_TYPE, context.intoFunction(clInit), state, this);
         }

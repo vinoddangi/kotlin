@@ -33,7 +33,6 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.backend.common.CodegenUtil;
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
 import org.jetbrains.kotlin.codegen.binding.CalculatedClosure;
-import org.jetbrains.kotlin.codegen.binding.CodegenBinding;
 import org.jetbrains.kotlin.codegen.context.*;
 import org.jetbrains.kotlin.codegen.inline.*;
 import org.jetbrains.kotlin.codegen.intrinsics.IntrinsicMethod;
@@ -264,10 +263,9 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
         }
         try {
             if (selector instanceof JetExpression) {
-                JetExpression expression = (JetExpression) selector;
-                SamType samType = bindingContext.get(CodegenBinding.SAM_VALUE, expression);
-                if (samType != null) {
-                    return genSamInterfaceValue(expression, samType, visitor);
+                StackValue samValue = genSamInterfaceValue((JetExpression) selector, visitor);
+                if (samValue != null) {
+                    return samValue;
                 }
             }
 
@@ -1390,13 +1388,14 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
             @Nullable SamType samType,
             @NotNull KotlinSyntheticClass.Kind kind
     ) {
-        Type asmType = asmTypeForAnonymousClass(bindingContext, descriptor);
-        ClassBuilder cv = state.getFactory().newVisitor(OtherOrigin(declaration, descriptor), asmType, declaration.getContainingFile());
-        ClassContext closureContext = context.intoClosure(descriptor, this, typeMapper);
+        ClassBuilder cv = state.getFactory().newVisitor(
+                OtherOrigin(declaration, descriptor),
+                asmTypeForAnonymousClass(bindingContext, descriptor),
+                declaration.getContainingFile()
+        );
 
         ClosureCodegen closureCodegen = new ClosureCodegen(
-                state, declaration, descriptor, samType, closureContext, kind,
-                strategy, parentCodegen, cv, asmType
+                state, declaration, samType, context.intoClosure(descriptor, this, typeMapper), kind, strategy, parentCodegen, cv
         );
 
         closureCodegen.generate();
@@ -1410,7 +1409,7 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
     }
 
     @Override
-    public StackValue visitObjectLiteralExpression(@NotNull final JetObjectLiteralExpression expression, final StackValue receiver) {
+    public StackValue visitObjectLiteralExpression(@NotNull JetObjectLiteralExpression expression, StackValue receiver) {
         final ObjectLiteralResult objectLiteralResult = generateObjectLiteral(expression);
         final ClassDescriptor classDescriptor = objectLiteralResult.classDescriptor;
         final Type type = typeMapper.mapType(classDescriptor);
@@ -2107,50 +2106,29 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
         }
 
         if (funDescriptor.getOriginal() instanceof SamConstructorDescriptor) {
-            //noinspection ConstantConditions
-            SamType samType = SamType.create(funDescriptor.getReturnType());
-            assert samType != null : "SamType is not created for SAM constructor: " + funDescriptor;
-            return invokeSamConstructor(expression, resolvedCall, samType);
+            JetExpression argumentExpression = bindingContext.get(SAM_CONSTRUCTOR_TO_ARGUMENT, expression);
+            assert argumentExpression != null : "Argument expression is not saved for a SAM constructor: " + funDescriptor;
+            return genSamInterfaceValue(argumentExpression, this);
         }
 
         return invokeFunction(resolvedCall, receiver);
     }
 
-    @NotNull
-    private StackValue invokeSamConstructor(
-            @NotNull JetCallExpression expression,
-            @NotNull ResolvedCall<?> resolvedCall,
-            @NotNull SamType samType
-    ) {
-        List<ResolvedValueArgument> arguments = resolvedCall.getValueArgumentsByIndex();
-        if (arguments == null) {
-            throw new IllegalStateException("Failed to arrange value arguments by index: " + resolvedCall.getResultingDescriptor());
-        }
-        ResolvedValueArgument argument = arguments.get(0);
-        if (!(argument instanceof ExpressionValueArgument)) {
-            throw new IllegalStateException(
-                    "argument of SAM constructor is " + argument.getClass().getName() + " " + expression.getText());
-        }
-        ValueArgument valueArgument = ((ExpressionValueArgument) argument).getValueArgument();
-        assert valueArgument != null : "getValueArgument() is null for " + expression.getText();
-        JetExpression argumentExpression = valueArgument.getArgumentExpression();
-        assert argumentExpression != null : "getArgumentExpression() is null for " + expression.getText();
-
-        return genSamInterfaceValue(argumentExpression, samType, this);
-    }
-
-    @NotNull
+    @Nullable
     private StackValue genSamInterfaceValue(
             @NotNull final JetExpression expression,
-            @NotNull final SamType samType,
             @NotNull final JetVisitor<StackValue, StackValue> visitor
     ) {
+        final SamType samType = bindingContext.get(SAM_VALUE, expression);
+        if (samType == null) return null;
+
         if (expression instanceof JetFunctionLiteralExpression) {
             return genClosure(((JetFunctionLiteralExpression) expression).getFunctionLiteral(), samType,
                               KotlinSyntheticClass.Kind.SAM_LAMBDA);
         }
 
-        final Type asmType = state.getSamWrapperClasses().getSamWrapperClass(samType, expression.getContainingJetFile(), getParentCodegen());
+        final Type asmType =
+                state.getSamWrapperClasses().getSamWrapperClass(samType, expression.getContainingJetFile(), getParentCodegen());
 
         return StackValue.operation(asmType, new Function1<InstructionAdapter, Unit>() {
             @Override
@@ -2481,8 +2459,7 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
     public StackValue generateThisOrOuter(@NotNull ClassDescriptor calleeContainingClass, boolean isSuper) {
         boolean isSingleton = calleeContainingClass.getKind().isSingleton();
         if (isSingleton) {
-            if (context.hasThisDescriptor() &&
-                context.getThisDescriptor().equals(calleeContainingClass) &&
+            if (calleeContainingClass.equals(context.getThisDescriptor()) &&
                 !AnnotationsPackage.isPlatformStaticInObjectOrClass(context.getContextDescriptor())) {
                 return StackValue.local(0, typeMapper.mapType(calleeContainingClass));
             }
@@ -3056,7 +3033,16 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
             rightType = boxType(rightType);
         }
 
-        return genEqualsForExpressionsOnStack(opToken, genLazy(left, leftType), genLazy(right, rightType));
+        StackValue leftValue = genLazy(left, leftType);
+        StackValue rightValue = genLazy(right, rightType);
+
+        if (opToken == JetTokens.EQEQEQ || opToken == JetTokens.EXCLEQEQEQ) {
+            // TODO: always casting to the type of the left operand in case of primitives looks wrong
+            Type operandType = isPrimitive(leftType) ? leftType : OBJECT_TYPE;
+            return StackValue.cmp(opToken, operandType, leftValue, rightValue);
+        }
+
+        return genEqualsForExpressionsOnStack(opToken, leftValue, rightValue);
     }
 
     private boolean isIntZero(JetExpression expr, Type exprType) {

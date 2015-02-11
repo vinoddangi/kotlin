@@ -249,16 +249,14 @@ public class ImplementationBodyCodegen extends ClassBodyCodegen {
     }
 
     private void writeEnclosingMethod() {
-        //JVMS7: A class must have an EnclosingMethod attribute if and only if it is a local class or an anonymous class.
-        DeclarationDescriptor parentDescriptor = descriptor.getContainingDeclaration();
-
-        boolean isObjectLiteral = DescriptorUtils.isAnonymousObject(descriptor);
-
-        boolean isLocalOrAnonymousClass = isObjectLiteral ||
-                                          !(parentDescriptor instanceof PackageFragmentDescriptor || parentDescriptor instanceof ClassDescriptor);
         // Do not emit enclosing method in "light-classes mode" since currently we generate local light classes as if they're top level
-        if (isLocalOrAnonymousClass && state.getClassBuilderMode() != ClassBuilderMode.LIGHT_CLASSES) {
-            writeOuterClassAndEnclosingMethod(descriptor, descriptor, typeMapper, v);
+        if (state.getClassBuilderMode() == ClassBuilderMode.LIGHT_CLASSES) {
+            return;
+        }
+
+        //JVMS7: A class must have an EnclosingMethod attribute if and only if it is a local class or an anonymous class.
+        if (isAnonymousObject(descriptor) || !(descriptor.getContainingDeclaration() instanceof ClassOrPackageFragmentDescriptor)) {
+            writeOuterClassAndEnclosingMethod();
         }
     }
 
@@ -683,7 +681,7 @@ public class ImplementationBodyCodegen extends ClassBodyCodegen {
         @Override
         public void generateComponentFunction(@NotNull FunctionDescriptor function, @NotNull final ValueParameterDescriptor parameter) {
             PsiElement originalElement = DescriptorToSourceUtils.descriptorToDeclaration(parameter);
-            functionCodegen.generateMethod(OtherOrigin(originalElement, function), typeMapper.mapSignature(function), function, new FunctionGenerationStrategy() {
+            functionCodegen.generateMethod(OtherOrigin(originalElement, function), function, new FunctionGenerationStrategy() {
                 @Override
                 public void generateBody(
                         @NotNull MethodVisitor mv,
@@ -708,11 +706,9 @@ public class ImplementationBodyCodegen extends ClassBodyCodegen {
 
         @Override
         public void generateCopyFunction(@NotNull final FunctionDescriptor function, @NotNull List<JetParameter> constructorParameters) {
-            JvmMethodSignature methodSignature = typeMapper.mapSignature(function);
-
             final Type thisDescriptorType = typeMapper.mapType(descriptor);
 
-            functionCodegen.generateMethod(OtherOrigin(myClass, function), methodSignature, function, new FunctionGenerationStrategy() {
+            functionCodegen.generateMethod(OtherOrigin(myClass, function), function, new FunctionGenerationStrategy() {
                 @Override
                 public void generateBody(
                         @NotNull MethodVisitor mv,
@@ -757,7 +753,7 @@ public class ImplementationBodyCodegen extends ClassBodyCodegen {
             });
 
             functionCodegen.generateDefaultIfNeeded(
-                    context.intoFunction(function), methodSignature, function, OwnerKind.IMPLEMENTATION,
+                    context.intoFunction(function), function, OwnerKind.IMPLEMENTATION,
                     new DefaultParameterValueLoader() {
                         @Override
                         public StackValue genValue(ValueParameterDescriptor valueParameter, ExpressionCodegen codegen) {
@@ -836,7 +832,7 @@ public class ImplementationBodyCodegen extends ClassBodyCodegen {
             FunctionDescriptor bridge = (FunctionDescriptor) entry.getValue();
             final FunctionDescriptor original = (FunctionDescriptor) entry.getKey();
             functionCodegen.generateMethod(
-                    Synthetic(null, original), typeMapper.mapSignature(bridge), bridge,
+                    Synthetic(null, original), bridge,
                     new FunctionGenerationStrategy.CodegenBased<FunctionDescriptor>(state, bridge) {
                         @Override
                         public void doGenerateBody(@NotNull ExpressionCodegen codegen, @NotNull JvmMethodSignature signature) {
@@ -891,9 +887,7 @@ public class ImplementationBodyCodegen extends ClassBodyCodegen {
             PropertyGetterDescriptor getter = bridge.getGetter();
             assert getter != null;
             functionCodegen.generateMethod(Synthetic(null, original.getGetter() != null ? original.getGetter() : original),
-                                           typeMapper.mapSignature(getter),
-                                           getter,
-                                           new PropertyAccessorStrategy(getter));
+                                           getter, new PropertyAccessorStrategy(getter));
 
 
             if (bridge.isVar()) {
@@ -901,9 +895,7 @@ public class ImplementationBodyCodegen extends ClassBodyCodegen {
                 assert setter != null;
 
                 functionCodegen.generateMethod(Synthetic(null, original.getSetter() != null ? original.getSetter() : original),
-                                               typeMapper.mapSignature(setter),
-                                               setter,
-                                               new PropertyAccessorStrategy(setter));
+                                               setter, new PropertyAccessorStrategy(setter));
             }
         }
         else {
@@ -1055,9 +1047,7 @@ public class ImplementationBodyCodegen extends ClassBodyCodegen {
             lookupConstructorExpressionsInClosureIfPresent(constructorContext);
         }
 
-        JvmMethodSignature signature = typeMapper.mapSignature(constructorDescriptor);
-
-        functionCodegen.generateMethod(OtherOrigin(myClass, constructorDescriptor), signature, constructorDescriptor, constructorContext,
+        functionCodegen.generateMethod(OtherOrigin(myClass, constructorDescriptor), constructorDescriptor, constructorContext,
                    new FunctionGenerationStrategy.CodegenBased<ConstructorDescriptor>(state, constructorDescriptor) {
                        @Override
                        public void doGenerateBody(@NotNull ExpressionCodegen codegen, @NotNull JvmMethodSignature signature) {
@@ -1066,7 +1056,7 @@ public class ImplementationBodyCodegen extends ClassBodyCodegen {
                    }
         );
 
-        functionCodegen.generateDefaultIfNeeded(constructorContext, signature, constructorDescriptor, OwnerKind.IMPLEMENTATION,
+        functionCodegen.generateDefaultIfNeeded(constructorContext, constructorDescriptor, OwnerKind.IMPLEMENTATION,
                                                 DefaultParameterValueLoader.DEFAULT, null);
 
         CallableMethod callableMethod = typeMapper.mapToCallableMethod(constructorDescriptor);
@@ -1350,7 +1340,6 @@ public class ImplementationBodyCodegen extends ClassBodyCodegen {
     private void generateDelegationToTraitImpl(@NotNull final FunctionDescriptor traitFun, @NotNull FunctionDescriptor inheritedFun) {
         functionCodegen.generateMethod(
                 DelegationToTraitImpl(descriptorToDeclaration(traitFun), traitFun),
-                typeMapper.mapSignature(inheritedFun),
                 inheritedFun,
                 new FunctionGenerationStrategy.CodegenBased<FunctionDescriptor>(state, inheritedFun) {
                     @Override
