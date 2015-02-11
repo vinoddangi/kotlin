@@ -115,7 +115,7 @@ public interface JetStubElementTypes {
             new JetPlaceHolderStubElementType<JetConstructorCalleeExpression>("CONSTRUCTOR_CALLEE", JetConstructorCalleeExpression.class);
 
     TokenSet DECLARATION_TYPES =
-            TokenSet.create(CLASS, OBJECT_DECLARATION, FUNCTION, PROPERTY, ANONYMOUS_INITIALIZER, ENUM_ENTRY);
+            TokenSet.create(CLASS, OBJECT_DECLARATION, FUNCTION, PROPERTY, ANONYMOUS_INITIALIZER, SECONDARY_CONSTRUCTOR, ENUM_ENTRY);
 
     TokenSet DELEGATION_SPECIFIER_TYPES = TokenSet.create(DELEGATOR_BY, DELEGATOR_SUPER_CALL, DELEGATOR_SUPER_CLASS);
 

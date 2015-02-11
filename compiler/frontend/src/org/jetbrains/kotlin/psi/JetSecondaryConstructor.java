@@ -39,6 +39,11 @@ public class JetSecondaryConstructor extends JetDeclarationStub<KotlinPlaceHolde
     }
 
     @Override
+    public <R, D> R accept(@NotNull JetVisitor<R, D> visitor, D data) {
+        return visitor.visitSecondaryConstructor(this, data);
+    }
+
+    @Override
     public boolean isLocal() {
         return false;
     }
