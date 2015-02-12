@@ -49,6 +49,12 @@ public class ShortenRefsTestGenerated extends AbstractShortenRefsTest {
         doTest(fileName);
     }
 
+    @TestMetadata("descriptorsChangeAfterImportInsertion.kt")
+    public void testDescriptorsChangeAfterImportInsertion() throws Exception {
+        String fileName = JetTestUtils.navigationMetadata("idea/testData/shortenRefs/descriptorsChangeAfterImportInsertion.kt");
+        doTest(fileName);
+    }
+
     @TestMetadata("JavaStaticMethod.kt")
     public void testJavaStaticMethod() throws Exception {
         String fileName = JetTestUtils.navigationMetadata("idea/testData/shortenRefs/JavaStaticMethod.kt");
@@ -138,6 +144,12 @@ public class ShortenRefsTestGenerated extends AbstractShortenRefsTest {
         @TestMetadata("NoImportNeeded3.kt")
         public void testNoImportNeeded3() throws Exception {
             String fileName = JetTestUtils.navigationMetadata("idea/testData/shortenRefs/constructor/NoImportNeeded3.kt");
+            doTest(fileName);
+        }
+
+        @TestMetadata("SAMConstructorFromLambda.kt")
+        public void testSAMConstructorFromLambda() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("idea/testData/shortenRefs/constructor/SAMConstructorFromLambda.kt");
             doTest(fileName);
         }
 

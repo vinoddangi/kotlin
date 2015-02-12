@@ -58,9 +58,23 @@ public class ShortenReferences(val options: (JetElement) -> Options = { Options.
                 = DescriptorRenderer.FQ_NAMES_IN_TYPES.render(this)
 
         private fun JetReferenceExpression.targets(context: BindingContext): Collection<DeclarationDescriptor> {
-            return context[BindingContext.REFERENCE_TARGET, this]?.let { listOf(it.getImportableDescriptor()) }
-                   ?: context[BindingContext.AMBIGUOUS_REFERENCE_TARGET, this]?.map { it.getImportableDescriptor() }?.toSet()
-                   ?: listOf()
+            val targets = context[BindingContext.REFERENCE_TARGET, this]?.let { listOf(it) }
+                          ?: context[BindingContext.AMBIGUOUS_REFERENCE_TARGET, this]
+                          ?: listOf()
+            return targets.map { descriptorToImport(it) }.toSet()
+        }
+
+        private fun descriptorToImport(target: DeclarationDescriptor): DeclarationDescriptor {
+            val descriptor = target.getImportableDescriptor()
+            // if there is a class with the same fq-name then prefer to consider it as target (otherwise we won't insert import)
+            if (descriptor is CallableDescriptor) {
+                val container = descriptor.getContainingDeclaration()
+                if (container is PackageFragmentDescriptor) {
+                    val classifier = container.getMemberScope().getClassifier(descriptor.getName())
+                    if (classifier != null) return classifier
+                }
+            }
+            return descriptor
         }
 
         private fun mayImport(descriptor: DeclarationDescriptor, file: JetFile): Boolean {
@@ -140,6 +154,7 @@ public class ShortenReferences(val options: (JetElement) -> Options = { Options.
             elements: List<JetElement>,
             elementFilter: (PsiElement) -> FilterResult
     ) {
+        //TODO: that's not correct since we have options!
         val elementsToUse = dropNestedElements(elements)
 
         val importInserter = ImportInserter(file)
@@ -155,7 +170,7 @@ public class ShortenReferences(val options: (JetElement) -> Options = { Options.
                     ShortenQualifiedExpressionsVisitor(file, elementFilter, failedToImportDescriptors)
             )
             val descriptorsToImport = visitors.flatMap { analyzeReferences(elementsToUse, it) }.toSet()
-            visitors.forEach { elementsToUse.removeAll(it.shortenElements()) }
+            visitors.forEach { it.shortenElements(elementsToUse) }
 
             var anyChange = false
             for (descriptor in descriptorsToImport) {
@@ -218,7 +233,7 @@ public class ShortenReferences(val options: (JetElement) -> Options = { Options.
 
         protected abstract fun qualifier(element: T): JetElement
 
-        protected abstract fun shortenElement(element: T)
+        protected abstract fun shortenElement(element: T): JetElement
 
         override fun visitElement(element: PsiElement) {
             if (elementFilter(element) != FilterResult.SKIP) {
@@ -226,12 +241,15 @@ public class ShortenReferences(val options: (JetElement) -> Options = { Options.
             }
         }
 
-        public fun shortenElements(): Collection<T> {
+        public fun shortenElements(elementSetToUpdate: MutableSet<JetElement>) {
             for (element in elementsToShorten) {
                 if (!element.isValid()) continue
-                shortenElement(element)
+                val newElement = shortenElement(element)
+                if (element in elementSetToUpdate && newElement != element) {
+                    elementSetToUpdate.remove(element)
+                    elementSetToUpdate.add(newElement)
+                }
             }
-            return elementsToShorten
         }
 
         public fun getDescriptorsToImport(): Set<DeclarationDescriptor> = descriptorsToImport
@@ -274,8 +292,9 @@ public class ShortenReferences(val options: (JetElement) -> Options = { Options.
 
         override fun qualifier(element: JetUserType) = element.getQualifier()!!
 
-        override fun shortenElement(element: JetUserType) {
+        override fun shortenElement(element: JetUserType): JetElement {
             element.deleteQualifier()
+            return element
         }
     }
 
@@ -351,8 +370,8 @@ public class ShortenReferences(val options: (JetElement) -> Options = { Options.
 
         override fun qualifier(element: JetQualifiedExpression) = element.getReceiverExpression()
 
-        override fun shortenElement(element: JetQualifiedExpression) {
-            element.replace(element.getSelectorExpression()!!)
+        override fun shortenElement(element: JetQualifiedExpression): JetElement {
+            return element.replace(element.getSelectorExpression()!!) as JetElement
         }
     }
 
@@ -386,8 +405,8 @@ public class ShortenReferences(val options: (JetElement) -> Options = { Options.
         override fun qualifier(element: JetThisExpression): JetElement =
                 throw AssertionError("Qualifier requested: ${JetPsiUtil.getElementTextWithContext(element)}")
 
-        override fun shortenElement(element: JetThisExpression) {
-            element.replace(simpleThis)
+        override fun shortenElement(element: JetThisExpression): JetElement {
+            return element.replace(simpleThis) as JetElement
         }
     }
 
