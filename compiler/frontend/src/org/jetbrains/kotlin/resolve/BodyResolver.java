@@ -24,6 +24,7 @@ import kotlin.Function1;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.descriptors.*;
+import org.jetbrains.kotlin.descriptors.impl.ConstructorDescriptorImpl;
 import org.jetbrains.kotlin.lexer.JetTokens;
 import org.jetbrains.kotlin.psi.*;
 import org.jetbrains.kotlin.resolve.calls.CallResolver;
@@ -134,7 +135,7 @@ public class BodyResolver {
     private void resolveSecondaryConstructorBody(
             @NotNull final BodiesResolveContext c,
             @NotNull final JetSecondaryConstructor constructor,
-            @NotNull ConstructorDescriptor descriptor
+            @NotNull final ConstructorDescriptor descriptor
     ) {
         JetScope bodyDeclaringScope = c.getDeclaringScopes().apply(constructor);
         assert bodyDeclaringScope != null;
@@ -149,7 +150,7 @@ public class BodyResolver {
         new Function1<JetScope, Void>() {
             @Override
             public Void invoke(@NotNull JetScope headerInnerScope) {
-                resolveSecondaryConstructorDelegationCall(c, headerInnerScope, constructor);
+                resolveSecondaryConstructorDelegationCall(c, headerInnerScope, constructor, descriptor);
                 return null;
             }
         });
@@ -158,15 +159,20 @@ public class BodyResolver {
     private void resolveSecondaryConstructorDelegationCall(
             @NotNull BodiesResolveContext c,
             @NotNull JetScope scope,
-            @NotNull JetSecondaryConstructor constructor
+            @NotNull JetSecondaryConstructor constructor,
+            @NotNull ConstructorDescriptor descriptor
     ) {
         JetConstructorDelegationCall call = constructor.getDelegationCall();
         if (call == null) return;
 
-        callResolver.resolveFunctionCall(
+        OverloadResolutionResults<?> results = callResolver.resolveFunctionCall(
                 trace, scope,
                 CallMaker.makeCall(ReceiverValue.NO_RECEIVER, null, call), NO_EXPECTED_TYPE, c.getOuterDataFlowInfo(), false
         );
+
+        if (results.isSuccess() && descriptor instanceof ConstructorDescriptorImpl) {
+            ((ConstructorDescriptorImpl) descriptor).setDelegatedConstructor((ConstructorDescriptor) results.getResultingDescriptor());
+        }
     }
 
     public void resolveBodies(@NotNull BodiesResolveContext c) {
@@ -257,6 +263,11 @@ public class BodyResolver {
                     if (classDescriptor != null) {
                         if (classDescriptor.getKind() == ClassKind.TRAIT) {
                             trace.report(CONSTRUCTOR_IN_TRAIT.on(elementToMark));
+                        }
+                        if (primaryConstructor instanceof ConstructorDescriptorImpl) {
+                            ((ConstructorDescriptorImpl) primaryConstructor).setDelegatedConstructor(
+                                    (ConstructorDescriptor) results.getResultingDescriptor()
+                            );
                         }
                     }
                 }

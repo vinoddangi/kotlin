@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.descriptors;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.name.Name;
 import org.jetbrains.kotlin.types.JetType;
 
@@ -38,6 +39,9 @@ public interface ConstructorDescriptor extends FunctionDescriptor {
     @NotNull
     @Override
     ConstructorDescriptor getOriginal();
+
+    @Nullable
+    ConstructorDescriptor getDelegatedConstructor();
 
     /**
      * @return "&lt;init&gt;" -- name is not stored for constructors

@@ -31,6 +31,7 @@ import static org.jetbrains.kotlin.descriptors.ReceiverParameterDescriptor.NO_RE
 public class ConstructorDescriptorImpl extends FunctionDescriptorImpl implements ConstructorDescriptor {
 
     protected final boolean isPrimary;
+    private ConstructorDescriptor delegatedConstructor;
 
     private static final Name NAME = Name.special("<init>");
 
@@ -87,6 +88,16 @@ public class ConstructorDescriptorImpl extends FunctionDescriptorImpl implements
     @Override
     public ConstructorDescriptor getOriginal() {
         return (ConstructorDescriptor) super.getOriginal();
+    }
+
+    @Nullable
+    @Override
+    public ConstructorDescriptor getDelegatedConstructor() {
+        return delegatedConstructor;
+    }
+
+    public void setDelegatedConstructor(@NotNull ConstructorDescriptor delegatedConstructor) {
+        this.delegatedConstructor = delegatedConstructor;
     }
 
     @Override
