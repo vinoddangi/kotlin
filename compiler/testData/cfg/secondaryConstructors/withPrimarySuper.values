@@ -1,0 +1,75 @@
+== B ==
+open class B(x: Int)
+---------------------
+    <v0>: Int   NEW: magic[FAKE_INITIALIZER](x: Int) -> <v0>
+=====================
+== A ==
+class A(val w: Char, u: Int = 2) : B(w.toInt() + u) {
+    val x: Int
+    var y: Int
+    val z: Int
+    val v = -1
+
+    constructor(): this('a') {
+        y = 2
+    }
+
+    // anonymous
+    constructor {
+        x = w
+        z = 8
+    }
+
+    constructor(a: Int, b: Int = 3): this(b.toChar()) {
+        y = x
+    }
+
+    // anonymous
+    constructor {
+        y = 9
+    }
+}
+---------------------
+                   <v0>: Char           NEW: magic[FAKE_INITIALIZER](val w: Char) -> <v0>
+                   <v11>: A             NEW: magic[IMPLICIT_RECEIVER](x) -> <v11>
+                   <v12>: A             NEW: magic[IMPLICIT_RECEIVER](w) -> <v12>
+                   <v14>: A             NEW: magic[IMPLICIT_RECEIVER](z) -> <v14>
+                   <v17>: A             NEW: magic[IMPLICIT_RECEIVER](y) -> <v17>
+                   <v22>: A             NEW: magic[IMPLICIT_RECEIVER](y) -> <v22>
+                   <v25>: Int           NEW: magic[FAKE_INITIALIZER](a: Int) -> <v25>
+                   <v27>: Int           NEW: magic[FAKE_INITIALIZER](b: Int = 3) -> <v27>
+                   <v2>: Int            NEW: magic[FAKE_INITIALIZER](u: Int = 2) -> <v2>
+                   <v32>: A             NEW: magic[IMPLICIT_RECEIVER](y) -> <v32>
+                   <v33>: A             NEW: magic[IMPLICIT_RECEIVER](x) -> <v33>
+2                  <v1>: Int            NEW: r(2) -> <v1>
+u: Int = 2         <v3>: Int            NEW: merge(u: Int = 2|<v1>, <v2>) -> <v3>
+w                  <v4>: Char           NEW: r(w) -> <v4>
+toInt()            <v5>: Int            NEW: call(toInt(), toInt|<v4>) -> <v5>
+w.toInt()          <v5>: Int            COPY
+u                  <v6>: Int            NEW: r(u) -> <v6>
+w.toInt() + u      <v7>: Int            NEW: call(w.toInt() + u, plus|<v5>, <v6>) -> <v7>
+B(w.toInt() + u)   <v8>: *              NEW: call(B(w.toInt() + u), <init>|<v7>) -> <v8>
+1                  <v9>: Int            NEW: r(1) -> <v9>
+-1                 <v10>: Int           NEW: call(-1, minus|<v9>) -> <v10>
+'a'                <v20>: Char          NEW: r('a') -> <v20>
+this('a')          <v21>: *             NEW: call(this('a'), <init>|<v20>) -> <v21>
+2                  <v23>: Int           NEW: r(2) -> <v23>
+y = 2              !<v24>: *
+{ y = 2 }          !<v24>: *            COPY
+w                  <v13>: Int           NEW: r(w|<v12>) -> <v13>
+8                  <v15>: Int           NEW: r(8) -> <v15>
+z = 8              !<v16>: *
+{ x = w z = 8 }    !<v16>: *            COPY
+3                  <v26>: Int           NEW: r(3) -> <v26>
+b: Int = 3         <v28>: Int           NEW: merge(b: Int = 3|<v26>, <v27>) -> <v28>
+b                  <v29>: {<: Number}   NEW: r(b) -> <v29>
+toChar()           <v30>: Char          NEW: call(toChar(), toChar|<v29>) -> <v30>
+b.toChar()         <v30>: Char          COPY
+this(b.toChar())   <v31>: *             NEW: call(this(b.toChar()), <init>|<v30>) -> <v31>
+x                  <v34>: Int           NEW: r(x|<v33>) -> <v34>
+y = x              !<v35>: *
+{ y = x }          !<v35>: *            COPY
+9                  <v18>: Int           NEW: r(9) -> <v18>
+y = 9              !<v19>: *
+{ y = 9 }          !<v19>: *            COPY
+=====================

@@ -1,0 +1,93 @@
+== A ==
+class A(val w: Char) {
+    val x: Int
+    var y: Int
+    val z: Int
+    val v = -1
+
+    constructor(): this('a') {
+        y = 2
+    }
+
+    // anonymous
+    constructor {
+        x = w
+        z = 8
+    }
+
+    constructor(a: Int, b: Int = 3): this(b.toChar()) {
+        y = x
+    }
+
+    // anonymous
+    constructor {
+        y = 9
+    }
+}
+---------------------
+L0:
+  1 <START>
+    v(val w: Char)
+    magic[FAKE_INITIALIZER](val w: Char) -> <v0>
+    w(w|<v0>)
+    v(val x: Int)
+    v(var y: Int)
+    v(val z: Int)
+    v(val v = -1)
+    r(1) -> <v1>
+    mark(-1)
+    call(-1, minus|<v1>) -> <v2>
+    w(v|<v2>)
+  2 mark({ x = w z = 8 })
+    magic[IMPLICIT_RECEIVER](x) -> <v3>
+    magic[IMPLICIT_RECEIVER](w) -> <v4>
+    r(w|<v4>) -> <v5>
+    w(x|<v3>, <v5>)
+    magic[IMPLICIT_RECEIVER](z) -> <v6>
+    r(8) -> <v7>
+    w(z|<v6>, <v7>)
+    mark({ y = 9 })
+    magic[IMPLICIT_RECEIVER](y) -> <v9>
+    r(9) -> <v10>
+    w(y|<v9>, <v10>)
+  1 jmp?(L2, L3)                                     NEXT:[r('a') -> <v12>, v(a: Int), jmp(L4)]
+    jmp(L4)                                          NEXT:[<END>]
+L2 [before secondary constructor delegating to this]:
+    r('a') -> <v12>                                  PREV:[jmp?(L2, L3)]
+    mark(this('a'))
+    call(this('a'), <init>|<v12>) -> <v13>
+  2 mark({ y = 2 })
+    magic[IMPLICIT_RECEIVER](y) -> <v14>
+    r(2) -> <v15>
+    w(y|<v14>, <v15>)
+  1 jmp(L4)                                          NEXT:[<END>]
+L3 [before secondary constructor delegating to this]:
+    v(a: Int)                                        PREV:[jmp?(L2, L3)]
+    magic[FAKE_INITIALIZER](a: Int) -> <v17>
+    w(a|<v17>)
+    v(b: Int = 3)
+    jmp?(L5)                                         NEXT:[magic[FAKE_INITIALIZER](b: Int = 3) -> <v19>, r(3) -> <v18>]
+    r(3) -> <v18>
+L5 [after default value for parameter b]:
+    magic[FAKE_INITIALIZER](b: Int = 3) -> <v19>     PREV:[jmp?(L5), r(3) -> <v18>]
+    merge(b: Int = 3|<v18>, <v19>) -> <v20>
+    w(b|<v20>)
+    mark(b.toChar())
+    r(b) -> <v21>
+    mark(toChar())
+    call(toChar(), toChar|<v21>) -> <v22>
+    mark(this(b.toChar()))
+    call(this(b.toChar()), <init>|<v22>) -> <v23>
+  2 mark({ y = x })
+    magic[IMPLICIT_RECEIVER](y) -> <v24>
+    magic[IMPLICIT_RECEIVER](x) -> <v25>
+    r(x|<v25>) -> <v26>
+    w(y|<v24>, <v26>)
+L1:
+L4 [after all secondary constructors delegating to this]:
+  1 <END>                                            NEXT:[<SINK>]                                                         PREV:[jmp(L4), jmp(L4), w(y|<v24>, <v26>)]
+error:
+    <ERROR>                                          PREV:[]
+sink:
+    <SINK>                                           PREV:[<ERROR>, <END>]
+=====================

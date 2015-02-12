@@ -1,0 +1,87 @@
+== A ==
+class A {
+    val x: Int
+    var y: Int
+    val z: Int
+    val v = -1
+
+    constructor() {
+        x = 1
+        y = 2
+    }
+    constructor(a: Int, b: Int = 3) {
+        x = a
+        y = x
+    }
+
+    //anonymous
+    constructor {
+        z = 8
+    }
+
+    constructor(a: String, b: Int = 4): this() {
+        y = 5
+    }
+    constructor(a: Double, b: Int = 6): this(a.toInt()) {
+        y = 7
+    }
+
+    // anonymous
+    constructor {
+        y = 9
+    }
+}
+---------------------
+                  <v11>: A             NEW: magic[IMPLICIT_RECEIVER](y) -> <v11>
+                  <v14>: Int           NEW: magic[FAKE_INITIALIZER](a: Int) -> <v14>
+                  <v16>: Int           NEW: magic[FAKE_INITIALIZER](b: Int = 3) -> <v16>
+                  <v20>: A             NEW: magic[IMPLICIT_RECEIVER](z) -> <v20>
+                  <v22>: A             NEW: magic[IMPLICIT_RECEIVER](y) -> <v22>
+                  <v24>: A             NEW: magic[IMPLICIT_RECEIVER](x) -> <v24>
+                  <v26>: A             NEW: magic[IMPLICIT_RECEIVER](y) -> <v26>
+                  <v27>: A             NEW: magic[IMPLICIT_RECEIVER](x) -> <v27>
+                  <v30>: String        NEW: magic[FAKE_INITIALIZER](a: String) -> <v30>
+                  <v32>: Int           NEW: magic[FAKE_INITIALIZER](b: Int = 4) -> <v32>
+                  <v35>: A             NEW: magic[IMPLICIT_RECEIVER](y) -> <v35>
+                  <v38>: Double        NEW: magic[FAKE_INITIALIZER](a: Double) -> <v38>
+                  <v3>: A              NEW: magic[IMPLICIT_RECEIVER](z) -> <v3>
+                  <v40>: Int           NEW: magic[FAKE_INITIALIZER](b: Int = 6) -> <v40>
+                  <v45>: A             NEW: magic[IMPLICIT_RECEIVER](y) -> <v45>
+                  <v6>: A              NEW: magic[IMPLICIT_RECEIVER](y) -> <v6>
+                  <v9>: A              NEW: magic[IMPLICIT_RECEIVER](x) -> <v9>
+1                 <v1>: Int            NEW: r(1) -> <v1>
+-1                <v19>: Int           NEW: call(-1, minus|<v1>) -> <v19>
+                  <v0>: *              NEW: call(, <init>) -> <v0>
+1                 <v10>: Int           NEW: r(1) -> <v10>
+2                 <v12>: Int           NEW: r(2) -> <v12>
+y = 2             !<v13>: *
+{ x = 1 y = 2 }   !<v13>: *            COPY
+3                 <v15>: Int           NEW: r(3) -> <v15>
+b: Int = 3        <v17>: Int           NEW: merge(b: Int = 3|<v15>, <v16>) -> <v17>
+                  <v18>: *             NEW: call(, <init>) -> <v18>
+a                 <v25>: Int           NEW: r(a) -> <v25>
+x                 <v28>: Int           NEW: r(x|<v27>) -> <v28>
+y = x             !<v29>: *
+{ x = a y = x }   !<v29>: *            COPY
+8                 <v21>: Int           NEW: r(8) -> <v21>
+z = 8             !<v5>: *
+{ z = 8 }         !<v5>: *             COPY
+4                 <v31>: Int           NEW: r(4) -> <v31>
+b: Int = 4        <v33>: Int           NEW: merge(b: Int = 4|<v31>, <v32>) -> <v33>
+this()            <v34>: *             NEW: call(this(), <init>) -> <v34>
+5                 <v36>: Int           NEW: r(5) -> <v36>
+y = 5             !<v37>: *
+{ y = 5 }         !<v37>: *            COPY
+6                 <v39>: Int           NEW: r(6) -> <v39>
+b: Int = 6        <v41>: Int           NEW: merge(b: Int = 6|<v39>, <v40>) -> <v41>
+a                 <v42>: {<: Number}   NEW: r(a) -> <v42>
+toInt()           <v43>: Int           NEW: call(toInt(), toInt|<v42>) -> <v43>
+a.toInt()         <v43>: Int           COPY
+this(a.toInt())   <v44>: *             NEW: call(this(a.toInt()), <init>|<v43>) -> <v44>
+7                 <v46>: Int           NEW: r(7) -> <v46>
+y = 7             !<v47>: *
+{ y = 7 }         !<v47>: *            COPY
+9                 <v23>: Int           NEW: r(9) -> <v23>
+y = 9             !<v8>: *
+{ y = 9 }         !<v8>: *             COPY
+=====================

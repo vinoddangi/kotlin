@@ -25,6 +25,7 @@ import com.intellij.util.containers.ContainerUtil;
 import kotlin.Function0;
 import kotlin.Function1;
 import kotlin.KotlinPackage;
+import kotlin.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
@@ -39,12 +40,10 @@ import org.jetbrains.kotlin.lexer.JetTokens;
 import org.jetbrains.kotlin.name.Name;
 import org.jetbrains.kotlin.psi.*;
 import org.jetbrains.kotlin.psi.psiUtil.PsiUtilPackage;
-import org.jetbrains.kotlin.resolve.BindingContext;
-import org.jetbrains.kotlin.resolve.BindingContextUtils;
-import org.jetbrains.kotlin.resolve.BindingTrace;
-import org.jetbrains.kotlin.resolve.CompileTimeConstantUtils;
+import org.jetbrains.kotlin.resolve.*;
 import org.jetbrains.kotlin.resolve.calls.model.*;
 import org.jetbrains.kotlin.resolve.constants.CompileTimeConstant;
+import org.jetbrains.kotlin.resolve.resolveUtil.ResolveUtilPackage;
 import org.jetbrains.kotlin.resolve.scopes.receivers.ExpressionReceiver;
 import org.jetbrains.kotlin.resolve.scopes.receivers.ReceiverValue;
 import org.jetbrains.kotlin.resolve.scopes.receivers.ThisReceiver;
@@ -1358,7 +1357,9 @@ public class JetControlFlowProcessor {
 
         @Override
         public void visitObjectDeclaration(@NotNull JetObjectDeclaration objectDeclaration) {
-            visitClassOrObject(objectDeclaration);
+            generateHeaderDelegationSpecifiers(objectDeclaration);
+            generateClassOrObjectInitializers(objectDeclaration);
+            generateDeclarationForLocalClassOrObjectIfNeeded(objectDeclaration);
         }
 
         @Override
@@ -1386,19 +1387,14 @@ public class JetControlFlowProcessor {
             generateInstructions(classInitializer.getBody());
         }
 
-        private void visitClassOrObject(JetClassOrObject classOrObject) {
+        private void generateHeaderDelegationSpecifiers(@NotNull JetClassOrObject classOrObject) {
             for (JetDelegationSpecifier specifier : classOrObject.getDelegationSpecifiers()) {
                 generateInstructions(specifier);
             }
-            List<JetDeclaration> declarations = classOrObject.getDeclarations();
-            if (classOrObject.isLocal()) {
-                for (JetDeclaration declaration : declarations) {
-                    generateInstructions(declaration);
-                }
-                return;
-            }
-            //For top-level and inner classes and objects functions are collected and checked separately.
-            for (JetDeclaration declaration : declarations) {
+        }
+
+        private void generateClassOrObjectInitializers(@NotNull JetClassOrObject classOrObject) {
+            for (JetDeclaration declaration : classOrObject.getDeclarations()) {
                 if (declaration instanceof JetProperty || declaration instanceof JetClassInitializer) {
                     generateInstructions(declaration);
                 }
@@ -1407,15 +1403,115 @@ public class JetControlFlowProcessor {
 
         @Override
         public void visitClass(@NotNull JetClass klass) {
-            List<JetParameter> parameters = klass.getPrimaryConstructorParameters();
+            // if there is no primary constructor, there are no parameters
+            processParameters(klass.getPrimaryConstructorParameters());
+            // delegation specifiers of primary constructor, anonymous class and property initializers
+            generateHeaderDelegationSpecifiers(klass);
+
+            if (klass.hasPrimaryConstructor()) {
+                generateClassOrObjectInitializers(klass);
+            }
+
+            processClassSecondaryConstructors(klass);
+            generateDeclarationForLocalClassOrObjectIfNeeded(klass);
+        }
+
+        private void generateDeclarationForLocalClassOrObjectIfNeeded(@NotNull JetClassOrObject classOrObject) {
+            if (classOrObject.isLocal()) {
+                for (JetDeclaration declaration : classOrObject.getDeclarations()) {
+                    if (declaration instanceof JetSecondaryConstructor ||
+                        declaration instanceof JetProperty ||
+                        declaration instanceof JetClassInitializer) {
+                        continue;
+                    }
+                    generateInstructions(declaration);
+                }
+            }
+        }
+
+        private void processParameters(@NotNull List<JetParameter> parameters) {
             for (JetParameter parameter : parameters) {
                 generateInstructions(parameter);
             }
-            visitClassOrObject(klass);
+        }
+
+        private void processClassSecondaryConstructors(@NotNull JetClass klass) {
+            Pair<List<? extends JetSecondaryConstructor>, List<? extends JetSecondaryConstructor>> delegatingToSuperAndToThis =
+                    ResolveUtilPackage.partitionSecondaryConstructorsByDelegationCallType(klass);
+            List<? extends JetSecondaryConstructor> constructorsDelegatingToSuper = delegatingToSuperAndToThis.getFirst();
+            List<? extends JetSecondaryConstructor> constructorsDelegatingToThis = delegatingToSuperAndToThis.getSecond();
+
+            // if there is primary constructor there should be no secondary with delegating call to super
+            // Error should be traced within resolve
+            processSecondaryConstructors(klass, constructorsDelegatingToSuper, false);
+            processSecondaryConstructors(klass, constructorsDelegatingToThis, true);
+        }
+
+        private void processSecondaryConstructors(
+                @NotNull JetClass klass,
+                @NotNull List<? extends JetSecondaryConstructor> constructors,
+                boolean areDelegatingToThis
+        ) {
+            if (constructors.size() > 0) {
+                String delegationTypeName = areDelegatingToThis ? "this" : "super";
+                List<Label> constructorsLabels = new ArrayList<Label>(constructors.size());
+                for (int i = 0; i < constructors.size(); i++) {
+                    // if constructors are delegating to super, we don't need label before first of them
+                    // so there will be non-deterministic jump to one of ctrs starting from second and straight transition to first
+                    if (areDelegatingToThis || i > 0) {
+                        constructorsLabels
+                                .add(builder.createUnboundLabel("before secondary constructor delegating to " + delegationTypeName));
+                    }
+                }
+
+                Label afterAllConstructors =
+                        builder.createUnboundLabel("after all secondary constructors delegating to " + delegationTypeName);
+
+                builder.nondeterministicJump(constructorsLabels, klass);
+
+                if (areDelegatingToThis) {
+                    builder.jump(afterAllConstructors, klass);
+                }
+
+                for (int i = 0; i < constructors.size(); i++) {
+                    if (areDelegatingToThis || i > 0) {
+                        // if constructors are delegating to super then labels starting from second
+                        builder.bindLabel(constructorsLabels.get(i - (areDelegatingToThis ? 0 : 1)));
+                    }
+
+                    generateSecondaryConstructor(klass, constructors.get(i), areDelegatingToThis);
+
+                    if (i + 1 < constructors.size()) {
+                        builder.jump(afterAllConstructors, klass);
+                    }
+                }
+
+                builder.bindLabel(afterAllConstructors);
+            }
+        }
+
+        private void generateSecondaryConstructor(
+                @NotNull JetClass klass,
+                @NotNull JetSecondaryConstructor constructor,
+                boolean isDelegatingToThis
+        ) {
+            processParameters(constructor.getValueParameters());
+            generateCallOrMarkUnresolved(constructor.getDelegationCall());
+
+            if (!klass.hasPrimaryConstructor() && !isDelegatingToThis) {
+                generateClassOrObjectInitializers(klass);
+            }
+
+            generateInstructions(constructor.getBodyExpression());
         }
 
         @Override
         public void visitDelegationToSuperCallSpecifier(@NotNull JetDelegatorToSuperCall call) {
+            generateCallOrMarkUnresolved(call);
+        }
+
+        private void generateCallOrMarkUnresolved(@Nullable JetCallElement call) {
+            if (call == null) return;
             if (!generateCall(call)) {
                 List<JetExpression> arguments = KotlinPackage.map(
                         call.getValueArguments(),

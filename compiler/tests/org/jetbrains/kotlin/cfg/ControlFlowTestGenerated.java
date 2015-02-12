@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 @SuppressWarnings("all")
 @TestMetadata("compiler/testData/cfg")
 @TestDataPath("$PROJECT_ROOT")
-@InnerTestClasses({ControlFlowTestGenerated.Arrays.class, ControlFlowTestGenerated.Basic.class, ControlFlowTestGenerated.Bugs.class, ControlFlowTestGenerated.ControlStructures.class, ControlFlowTestGenerated.Conventions.class, ControlFlowTestGenerated.DeadCode.class, ControlFlowTestGenerated.Declarations.class, ControlFlowTestGenerated.Expressions.class, ControlFlowTestGenerated.Functions.class, ControlFlowTestGenerated.TailCalls.class})
+@InnerTestClasses({ControlFlowTestGenerated.Arrays.class, ControlFlowTestGenerated.Basic.class, ControlFlowTestGenerated.Bugs.class, ControlFlowTestGenerated.ControlStructures.class, ControlFlowTestGenerated.Conventions.class, ControlFlowTestGenerated.DeadCode.class, ControlFlowTestGenerated.Declarations.class, ControlFlowTestGenerated.Expressions.class, ControlFlowTestGenerated.Functions.class, ControlFlowTestGenerated.SecondaryConstructors.class, ControlFlowTestGenerated.TailCalls.class})
 @RunWith(JUnit3RunnerWithInners.class)
 public class ControlFlowTestGenerated extends AbstractControlFlowTest {
     public void testAllFilesPresentInCfg() throws Exception {
@@ -589,6 +589,39 @@ public class ControlFlowTestGenerated extends AbstractControlFlowTest {
         @TestMetadata("unmappedArgs.kt")
         public void testUnmappedArgs() throws Exception {
             String fileName = JetTestUtils.navigationMetadata("compiler/testData/cfg/functions/unmappedArgs.kt");
+            doTest(fileName);
+        }
+    }
+
+    @TestMetadata("compiler/testData/cfg/secondaryConstructors")
+    @TestDataPath("$PROJECT_ROOT")
+    @RunWith(JUnit3RunnerWithInners.class)
+    public static class SecondaryConstructors extends AbstractControlFlowTest {
+        public void testAllFilesPresentInSecondaryConstructors() throws Exception {
+            JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), new File("compiler/testData/cfg/secondaryConstructors"), Pattern.compile("^(.+)\\.kt$"), true);
+        }
+
+        @TestMetadata("withPrimary.kt")
+        public void testWithPrimary() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/cfg/secondaryConstructors/withPrimary.kt");
+            doTest(fileName);
+        }
+
+        @TestMetadata("withPrimarySuper.kt")
+        public void testWithPrimarySuper() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/cfg/secondaryConstructors/withPrimarySuper.kt");
+            doTest(fileName);
+        }
+
+        @TestMetadata("withoutPrimary.kt")
+        public void testWithoutPrimary() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/cfg/secondaryConstructors/withoutPrimary.kt");
+            doTest(fileName);
+        }
+
+        @TestMetadata("withoutPrimarySuper.kt")
+        public void testWithoutPrimarySuper() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("compiler/testData/cfg/secondaryConstructors/withoutPrimarySuper.kt");
             doTest(fileName);
         }
     }

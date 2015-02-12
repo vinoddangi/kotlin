@@ -10074,6 +10074,18 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
                 doTest(fileName);
             }
 
+            @TestMetadata("membersInitializationWithPrimary.kt")
+            public void testMembersInitializationWithPrimary() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/secondaryConstructors/membersInitializationWithPrimary.kt");
+                doTest(fileName);
+            }
+
+            @TestMetadata("membersInitializationWithoutPrimary.kt")
+            public void testMembersInitializationWithoutPrimary() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/secondaryConstructors/membersInitializationWithoutPrimary.kt");
+                doTest(fileName);
+            }
+
             @TestMetadata("noPrimaryConstructor.kt")
             public void testNoPrimaryConstructor() throws Exception {
                 String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/secondaryConstructors/noPrimaryConstructor.kt");

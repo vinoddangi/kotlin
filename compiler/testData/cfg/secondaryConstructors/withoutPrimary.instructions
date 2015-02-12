@@ -1,0 +1,149 @@
+== A ==
+class A {
+    val x: Int
+    var y: Int
+    val z: Int
+    val v = -1
+
+    constructor() {
+        x = 1
+        y = 2
+    }
+    constructor(a: Int, b: Int = 3) {
+        x = a
+        y = x
+    }
+
+    //anonymous
+    constructor {
+        z = 8
+    }
+
+    constructor(a: String, b: Int = 4): this() {
+        y = 5
+    }
+    constructor(a: Double, b: Int = 6): this(a.toInt()) {
+        y = 7
+    }
+
+    // anonymous
+    constructor {
+        y = 9
+    }
+}
+---------------------
+L0:
+  1 <START>
+    jmp?(L2)                                        NEXT:[v(a: Int), mark()]
+    mark()
+    call(, <init>) -> <v0>
+    v(val x: Int)
+    v(var y: Int)
+    v(val z: Int)
+    v(val v = -1)
+    r(1) -> <v1>
+    mark(-1)
+    call(-1, minus|<v1>) -> <v2>
+    w(v|<v2>)
+  2 mark({ z = 8 })
+    magic[IMPLICIT_RECEIVER](z) -> <v3>
+    r(8) -> <v4>
+    w(z|<v3>, <v4>)
+    mark({ y = 9 })
+    magic[IMPLICIT_RECEIVER](y) -> <v6>
+    r(9) -> <v7>
+    w(y|<v6>, <v7>)
+    mark({ x = 1 y = 2 })
+    magic[IMPLICIT_RECEIVER](x) -> <v9>
+    r(1) -> <v10>
+    w(x|<v9>, <v10>)
+    magic[IMPLICIT_RECEIVER](y) -> <v11>
+    r(2) -> <v12>
+    w(y|<v11>, <v12>)
+  1 jmp(L3)                                         NEXT:[jmp?(L5, L6)]
+L2 [before secondary constructor delegating to super]:
+    v(a: Int)                                       PREV:[jmp?(L2)]
+    magic[FAKE_INITIALIZER](a: Int) -> <v14>
+    w(a|<v14>)
+    v(b: Int = 3)
+    jmp?(L4)                                        NEXT:[magic[FAKE_INITIALIZER](b: Int = 3) -> <v16>, r(3) -> <v15>]
+    r(3) -> <v15>
+L4 [after default value for parameter b]:
+    magic[FAKE_INITIALIZER](b: Int = 3) -> <v16>    PREV:[jmp?(L4), r(3) -> <v15>]
+    merge(b: Int = 3|<v15>, <v16>) -> <v17>
+    w(b|<v17>)
+    mark()
+    call(, <init>) -> <v18>
+    v(val x: Int)
+    v(var y: Int)
+    v(val z: Int)
+    v(val v = -1)
+    mark(-1)
+    call(-1, minus|<v1>) -> <v19>
+    w(v|<v19>)
+  2 mark({ z = 8 })
+    magic[IMPLICIT_RECEIVER](z) -> <v20>
+    r(8) -> <v21>
+    w(z|<v20>, <v21>)
+    mark({ y = 9 })
+    magic[IMPLICIT_RECEIVER](y) -> <v22>
+    r(9) -> <v23>
+    w(y|<v22>, <v23>)
+    mark({ x = a y = x })
+    magic[IMPLICIT_RECEIVER](x) -> <v24>
+    r(a) -> <v25>
+    w(x|<v24>, <v25>)
+    magic[IMPLICIT_RECEIVER](y) -> <v26>
+    magic[IMPLICIT_RECEIVER](x) -> <v27>
+    r(x|<v27>) -> <v28>
+    w(y|<v26>, <v28>)
+L3 [after all secondary constructors delegating to super]:
+  1 jmp?(L5, L6)                                    NEXT:[v(a: String), v(a: Double), jmp(L7)]                            PREV:[jmp(L3), w(y|<v26>, <v28>)]
+    jmp(L7)                                         NEXT:[<END>]
+L5 [before secondary constructor delegating to this]:
+    v(a: String)                                    PREV:[jmp?(L5, L6)]
+    magic[FAKE_INITIALIZER](a: String) -> <v30>
+    w(a|<v30>)
+    v(b: Int = 4)
+    jmp?(L8)                                        NEXT:[magic[FAKE_INITIALIZER](b: Int = 4) -> <v32>, r(4) -> <v31>]
+    r(4) -> <v31>
+L8 [after default value for parameter b]:
+    magic[FAKE_INITIALIZER](b: Int = 4) -> <v32>    PREV:[jmp?(L8), r(4) -> <v31>]
+    merge(b: Int = 4|<v31>, <v32>) -> <v33>
+    w(b|<v33>)
+    mark(this())
+    call(this(), <init>) -> <v34>
+  2 mark({ y = 5 })
+    magic[IMPLICIT_RECEIVER](y) -> <v35>
+    r(5) -> <v36>
+    w(y|<v35>, <v36>)
+  1 jmp(L7)                                         NEXT:[<END>]
+L6 [before secondary constructor delegating to this]:
+    v(a: Double)                                    PREV:[jmp?(L5, L6)]
+    magic[FAKE_INITIALIZER](a: Double) -> <v38>
+    w(a|<v38>)
+    v(b: Int = 6)
+    jmp?(L9)                                        NEXT:[magic[FAKE_INITIALIZER](b: Int = 6) -> <v40>, r(6) -> <v39>]
+    r(6) -> <v39>
+L9 [after default value for parameter b]:
+    magic[FAKE_INITIALIZER](b: Int = 6) -> <v40>    PREV:[jmp?(L9), r(6) -> <v39>]
+    merge(b: Int = 6|<v39>, <v40>) -> <v41>
+    w(b|<v41>)
+    mark(a.toInt())
+    r(a) -> <v42>
+    mark(toInt())
+    call(toInt(), toInt|<v42>) -> <v43>
+    mark(this(a.toInt()))
+    call(this(a.toInt()), <init>|<v43>) -> <v44>
+  2 mark({ y = 7 })
+    magic[IMPLICIT_RECEIVER](y) -> <v45>
+    r(7) -> <v46>
+    w(y|<v45>, <v46>)
+L1:
+L7 [after all secondary constructors delegating to this]:
+  1 <END>                                           NEXT:[<SINK>]                                                         PREV:[jmp(L7), jmp(L7), w(y|<v45>, <v46>)]
+error:
+    <ERROR>                                         PREV:[]
+sink:
+    <SINK>                                          PREV:[<ERROR>, <END>]
+=====================

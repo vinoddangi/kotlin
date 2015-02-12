@@ -1,0 +1,94 @@
+== B ==
+open class B(x: Int)
+---------------------
+    <v0>: Int   NEW: magic[FAKE_INITIALIZER](x: Int) -> <v0>
+=====================
+== A ==
+class A : B {
+    val x: Int
+    var y: Int
+    val z: Int
+    val v = -1
+
+    constructor(): super(11) {
+        x = 1
+        y = 2
+    }
+    constructor(a: Int, b: Int = 3): super(b) {
+        x = a
+        y = x
+    }
+
+    // anonymous
+    constructor {
+        z = 8
+    }
+
+    constructor(a: String, b: Int = 4): this() {
+        y = 5
+    }
+    constructor(a: Double, b: Int = 6): this(a.toInt()) {
+        y = 7
+    }
+
+    // anonymous
+    constructor {
+        y = 9
+    }
+}
+---------------------
+                  <v10>: A             NEW: magic[IMPLICIT_RECEIVER](x) -> <v10>
+                  <v12>: A             NEW: magic[IMPLICIT_RECEIVER](y) -> <v12>
+                  <v15>: Int           NEW: magic[FAKE_INITIALIZER](a: Int) -> <v15>
+                  <v17>: Int           NEW: magic[FAKE_INITIALIZER](b: Int = 3) -> <v17>
+                  <v22>: A             NEW: magic[IMPLICIT_RECEIVER](z) -> <v22>
+                  <v24>: A             NEW: magic[IMPLICIT_RECEIVER](y) -> <v24>
+                  <v26>: A             NEW: magic[IMPLICIT_RECEIVER](x) -> <v26>
+                  <v28>: A             NEW: magic[IMPLICIT_RECEIVER](y) -> <v28>
+                  <v29>: A             NEW: magic[IMPLICIT_RECEIVER](x) -> <v29>
+                  <v32>: String        NEW: magic[FAKE_INITIALIZER](a: String) -> <v32>
+                  <v34>: Int           NEW: magic[FAKE_INITIALIZER](b: Int = 4) -> <v34>
+                  <v37>: A             NEW: magic[IMPLICIT_RECEIVER](y) -> <v37>
+                  <v40>: Double        NEW: magic[FAKE_INITIALIZER](a: Double) -> <v40>
+                  <v42>: Int           NEW: magic[FAKE_INITIALIZER](b: Int = 6) -> <v42>
+                  <v47>: A             NEW: magic[IMPLICIT_RECEIVER](y) -> <v47>
+                  <v4>: A              NEW: magic[IMPLICIT_RECEIVER](z) -> <v4>
+                  <v7>: A              NEW: magic[IMPLICIT_RECEIVER](y) -> <v7>
+1                 <v2>: Int            NEW: r(1) -> <v2>
+-1                <v21>: Int           NEW: call(-1, minus|<v2>) -> <v21>
+11                <v0>: Int            NEW: r(11) -> <v0>
+super(11)         <v1>: *              NEW: call(super(11), <init>|<v0>) -> <v1>
+1                 <v11>: Int           NEW: r(1) -> <v11>
+2                 <v13>: Int           NEW: r(2) -> <v13>
+y = 2             !<v14>: *
+{ x = 1 y = 2 }   !<v14>: *            COPY
+3                 <v16>: Int           NEW: r(3) -> <v16>
+b: Int = 3        <v18>: Int           NEW: merge(b: Int = 3|<v16>, <v17>) -> <v18>
+b                 <v19>: Int           NEW: r(b) -> <v19>
+super(b)          <v20>: *             NEW: call(super(b), <init>|<v19>) -> <v20>
+a                 <v27>: Int           NEW: r(a) -> <v27>
+x                 <v30>: Int           NEW: r(x|<v29>) -> <v30>
+y = x             !<v31>: *
+{ x = a y = x }   !<v31>: *            COPY
+8                 <v23>: Int           NEW: r(8) -> <v23>
+z = 8             !<v6>: *
+{ z = 8 }         !<v6>: *             COPY
+4                 <v33>: Int           NEW: r(4) -> <v33>
+b: Int = 4        <v35>: Int           NEW: merge(b: Int = 4|<v33>, <v34>) -> <v35>
+this()            <v36>: *             NEW: call(this(), <init>) -> <v36>
+5                 <v38>: Int           NEW: r(5) -> <v38>
+y = 5             !<v39>: *
+{ y = 5 }         !<v39>: *            COPY
+6                 <v41>: Int           NEW: r(6) -> <v41>
+b: Int = 6        <v43>: Int           NEW: merge(b: Int = 6|<v41>, <v42>) -> <v43>
+a                 <v44>: {<: Number}   NEW: r(a) -> <v44>
+toInt()           <v45>: Int           NEW: call(toInt(), toInt|<v44>) -> <v45>
+a.toInt()         <v45>: Int           COPY
+this(a.toInt())   <v46>: *             NEW: call(this(a.toInt()), <init>|<v45>) -> <v46>
+7                 <v48>: Int           NEW: r(7) -> <v48>
+y = 7             !<v49>: *
+{ y = 7 }         !<v49>: *            COPY
+9                 <v25>: Int           NEW: r(9) -> <v25>
+y = 9             !<v9>: *
+{ y = 9 }         !<v9>: *             COPY
+=====================
