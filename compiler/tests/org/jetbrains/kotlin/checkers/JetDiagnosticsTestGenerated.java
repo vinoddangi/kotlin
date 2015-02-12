@@ -10068,6 +10068,12 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
                 doTest(fileName);
             }
 
+            @TestMetadata("cyclicDelegationCalls.kt")
+            public void testCyclicDelegationCalls() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/secondaryConstructors/cyclicDelegationCalls.kt");
+                doTest(fileName);
+            }
+
             @TestMetadata("memberAccessBeforeSuperCall.kt")
             public void testMemberAccessBeforeSuperCall() throws Exception {
                 String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/secondaryConstructors/memberAccessBeforeSuperCall.kt");
