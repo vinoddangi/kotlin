@@ -290,6 +290,10 @@ class BasicCompletionSession(configuration: CompletionSessionConfiguration,
                         if (expression != null) {
                             collector.addElements(thisExpressionItems(bindingContext!!, expression).map { it.factory() })
                         }
+                        else {
+                            // for completion in secondary constructor delegation call
+                            collector.addElement(lookupElement)
+                        }
                     }
 
                     // if "return" is parsed correctly in the current context - insert it and all return@xxx items
