@@ -556,6 +556,18 @@ public class JvmBasicCompletionTestGenerated extends AbstractJvmBasicCompletionT
             doTest(fileName);
         }
 
+        @TestMetadata("InSecondaryConstructorBody.kt")
+        public void testInSecondaryConstructorBody() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("idea/testData/completion/basic/common/InSecondaryConstructorBody.kt");
+            doTest(fileName);
+        }
+
+        @TestMetadata("InSecondaryConstructorDelegationCall.kt")
+        public void testInSecondaryConstructorDelegationCall() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("idea/testData/completion/basic/common/InSecondaryConstructorDelegationCall.kt");
+            doTest(fileName);
+        }
+
         @TestMetadata("InTypeAnnotation.kt")
         public void testInTypeAnnotation() throws Exception {
             String fileName = JetTestUtils.navigationMetadata("idea/testData/completion/basic/common/InTypeAnnotation.kt");

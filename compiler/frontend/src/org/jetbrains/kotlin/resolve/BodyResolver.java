@@ -128,7 +128,9 @@ public class BodyResolver {
 
     private void resolveSecondaryConstructors(@NotNull BodiesResolveContext c) {
         for (Map.Entry<JetSecondaryConstructor, ConstructorDescriptor> entry : c.getSecondaryConstructors().entrySet()) {
-            resolveSecondaryConstructorBody(c, entry.getKey(), entry.getValue());
+            JetScope declaringScope = c.getDeclaringScopes().apply(entry.getKey());
+            assert declaringScope != null;
+            resolveSecondaryConstructorBody(c, trace, entry.getKey(), entry.getValue(), declaringScope);
         }
         if (c.getSecondaryConstructors().isEmpty()) return;
         Set<ConstructorDescriptor> visitedConstructors = Sets.newHashSet();
@@ -137,14 +139,13 @@ public class BodyResolver {
         }
     }
 
-    private void resolveSecondaryConstructorBody(
+    public void resolveSecondaryConstructorBody(
             @NotNull final BodiesResolveContext c,
+            @NotNull final BindingTrace trace,
             @NotNull final JetSecondaryConstructor constructor,
-            @NotNull final ConstructorDescriptor descriptor
+            @NotNull final ConstructorDescriptor descriptor,
+            @NotNull JetScope bodyDeclaringScope
     ) {
-        JetScope bodyDeclaringScope = c.getDeclaringScopes().apply(constructor);
-        assert bodyDeclaringScope != null;
-
         assert descriptor.getContainingDeclaration() instanceof ClassDescriptorWithResolutionScopes
                 : "When resolving body it should be class descriptor with resolution scopes";
 
@@ -155,7 +156,7 @@ public class BodyResolver {
         new Function1<JetScope, Void>() {
             @Override
             public Void invoke(@NotNull JetScope headerInnerScope) {
-                resolveSecondaryConstructorDelegationCall(c, headerInnerScope, constructor, descriptor);
+                resolveSecondaryConstructorDelegationCall(c, trace, headerInnerScope, constructor, descriptor);
                 return null;
             }
         });
@@ -163,6 +164,7 @@ public class BodyResolver {
 
     private void resolveSecondaryConstructorDelegationCall(
             @NotNull BodiesResolveContext c,
+            @NotNull BindingTrace trace,
             @NotNull JetScope scope,
             @NotNull JetSecondaryConstructor constructor,
             @NotNull ConstructorDescriptor descriptor
