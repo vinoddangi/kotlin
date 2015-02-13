@@ -51,6 +51,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import static org.jetbrains.kotlin.diagnostics.Errors.EXPECTED_PRIMARY_CONSTRUCTOR_DELEGATION_CALL;
 import static org.jetbrains.kotlin.diagnostics.Errors.NOT_A_CLASS;
 import static org.jetbrains.kotlin.diagnostics.Errors.NO_CONSTRUCTOR;
 import static org.jetbrains.kotlin.resolve.bindingContextUtil.BindingContextUtilPackage.recordScopeAndDataFlowInfo;
@@ -303,6 +304,13 @@ public class CallResolver {
             context.trace.report(NO_CONSTRUCTOR.on(CallUtilPackage.getValueArgumentListOrElement(context.call)));
             return checkArgumentTypesAndFail(context);
         }
+
+        if (!calleeExpression.isThis() && classDescriptor.getUnsubstitutedPrimaryConstructor() != null) {
+            context.trace.report(EXPECTED_PRIMARY_CONSTRUCTOR_DELEGATION_CALL.on(
+                    (JetConstructorDelegationCall) calleeExpression.getParent()
+            ));
+        }
+
         List<ResolutionCandidate<CallableDescriptor>> candidates =
                 ResolutionCandidate.<CallableDescriptor>convertCollection(context.call, constructors);
 

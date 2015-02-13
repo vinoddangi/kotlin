@@ -410,6 +410,7 @@ public class DefaultErrorMessages {
         MAP.put(CYCLIC_CONSTRUCTOR_DELEGATION_CALL, "There's a cycle in the delegation calls chain");
         MAP.put(SECONDARY_CONSTRUCTOR_IN_OBJECT, "Constructors are not allowed for objects");
         MAP.put(SUPERTYPE_INITIALIZED_WITHOUT_PRIMARY_CONSTRUCTOR, "Supertype initialization is impossible without primary constructor");
+        MAP.put(EXPECTED_PRIMARY_CONSTRUCTOR_DELEGATION_CALL, "Expected primary constructor call");
 
         MAP.put(ILLEGAL_SELECTOR, "Expression ''{0}'' cannot be a selector (occur after a dot)", STRING);
 

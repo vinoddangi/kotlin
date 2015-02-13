@@ -10086,6 +10086,12 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
                 doTest(fileName);
             }
 
+            @TestMetadata("expectedPrimaryConstructorCall.kt")
+            public void testExpectedPrimaryConstructorCall() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/secondaryConstructors/expectedPrimaryConstructorCall.kt");
+                doTest(fileName);
+            }
+
             @TestMetadata("headerSupertypeInitialization.kt")
             public void testHeaderSupertypeInitialization() throws Exception {
                 String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/secondaryConstructors/headerSupertypeInitialization.kt");
