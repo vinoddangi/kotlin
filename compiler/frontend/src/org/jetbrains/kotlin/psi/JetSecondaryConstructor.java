@@ -169,4 +169,8 @@ public class JetSecondaryConstructor extends JetDeclarationStub<KotlinPlaceHolde
     public JetConstructorDelegationCall getDelegationCall() {
         return getStubOrPsiChild(JetStubElementTypes.CONSTRUCTOR_DELEGATION_CALL);
     }
+
+    public boolean isDeclaredInObject() {
+        return getParent().getParent() instanceof JetObjectDeclaration;
+    }
 }

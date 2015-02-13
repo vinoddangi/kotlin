@@ -37,6 +37,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.jetbrains.kotlin.diagnostics.Errors.MANY_CLASS_OBJECTS;
+import static org.jetbrains.kotlin.diagnostics.Errors.SECONDARY_CONSTRUCTOR_IN_OBJECT;
 import static org.jetbrains.kotlin.diagnostics.Errors.UNSUPPORTED;
 
 public class LazyTopDownAnalyzer {
@@ -191,10 +192,10 @@ public class LazyTopDownAnalyzer {
                             registerDeclarations(classOrObject.getDeclarations());
                             registerTopLevelFqName(topLevelFqNames, classOrObject, descriptor);
 
-                            checkManyClassObjects(classOrObject);
+                            checkClassOrObjectDeclarations(classOrObject, descriptor.getKind());
                         }
 
-                        private void checkManyClassObjects(JetClassOrObject classOrObject) {
+                        private void checkClassOrObjectDeclarations(JetClassOrObject classOrObject, ClassKind classKind) {
                             boolean classObjectAlreadyFound = false;
                             for (JetDeclaration jetDeclaration : classOrObject.getDeclarations()) {
                                 if (jetDeclaration instanceof JetObjectDeclaration && ((JetObjectDeclaration) jetDeclaration).isClassObject()) {
@@ -202,6 +203,11 @@ public class LazyTopDownAnalyzer {
                                         trace.report(MANY_CLASS_OBJECTS.on((JetObjectDeclaration) jetDeclaration));
                                     }
                                     classObjectAlreadyFound = true;
+                                }
+                                else if (jetDeclaration instanceof JetSecondaryConstructor) {
+                                    if (classKind.isSingleton()) {
+                                        trace.report(SECONDARY_CONSTRUCTOR_IN_OBJECT.on((JetSecondaryConstructor) jetDeclaration));
+                                    }
                                 }
                             }
                         }
@@ -225,6 +231,9 @@ public class LazyTopDownAnalyzer {
 
                         @Override
                         public void visitSecondaryConstructor(@NotNull JetSecondaryConstructor constructor) {
+                            if (constructor.isDeclaredInObject()) {
+                                return;
+                            }
                             c.getSecondaryConstructors().put(
                                     constructor,
                                     (ConstructorDescriptor) lazyDeclarationResolver.resolveToDescriptor(constructor)
