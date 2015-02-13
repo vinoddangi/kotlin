@@ -197,8 +197,6 @@ public class LazyTopDownAnalyzer {
                         private void checkManyClassObjects(JetClassOrObject classOrObject) {
                             boolean classObjectAlreadyFound = false;
                             for (JetDeclaration jetDeclaration : classOrObject.getDeclarations()) {
-                                jetDeclaration.accept(this);
-
                                 if (jetDeclaration instanceof JetObjectDeclaration && ((JetObjectDeclaration) jetDeclaration).isClassObject()) {
                                     if (classObjectAlreadyFound) {
                                         trace.report(MANY_CLASS_OBJECTS.on((JetObjectDeclaration) jetDeclaration));
