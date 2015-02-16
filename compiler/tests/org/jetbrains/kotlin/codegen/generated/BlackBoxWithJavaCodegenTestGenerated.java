@@ -30,7 +30,11 @@ import java.util.regex.Pattern;
 @SuppressWarnings("all")
 @TestMetadata("compiler/testData/codegen/boxWithJava")
 @TestDataPath("$PROJECT_ROOT")
-@InnerTestClasses({BlackBoxWithJavaCodegenTestGenerated.BuiltinStubMethods.class, BlackBoxWithJavaCodegenTestGenerated.NotNullAssertions.class, BlackBoxWithJavaCodegenTestGenerated.PlatformStatic.class, BlackBoxWithJavaCodegenTestGenerated.Properties.class})
+@InnerTestClasses({
+        BlackBoxWithJavaCodegenTestGenerated.BuiltinStubMethods.class,
+        BlackBoxWithJavaCodegenTestGenerated.NotNullAssertions.class,
+        BlackBoxWithJavaCodegenTestGenerated.PlatformStatic.class,
+        BlackBoxWithJavaCodegenTestGenerated.Properties.class})
 @RunWith(JUnit3RunnerWithInners.class)
 public class BlackBoxWithJavaCodegenTestGenerated extends AbstractBlackBoxCodegenTest {
     public void testAllFilesPresentInBoxWithJava() throws Exception {
@@ -63,7 +67,8 @@ public class BlackBoxWithJavaCodegenTestGenerated extends AbstractBlackBoxCodege
 
     @TestMetadata("compiler/testData/codegen/boxWithJava/builtinStubMethods")
     @TestDataPath("$PROJECT_ROOT")
-    @InnerTestClasses({})
+    @InnerTestClasses({
+})
     @RunWith(JUnit3RunnerWithInners.class)
     public static class BuiltinStubMethods extends AbstractBlackBoxCodegenTest {
         public void testAllFilesPresentInBuiltinStubMethods() throws Exception {
@@ -92,7 +97,8 @@ public class BlackBoxWithJavaCodegenTestGenerated extends AbstractBlackBoxCodege
 
     @TestMetadata("compiler/testData/codegen/boxWithJava/notNullAssertions")
     @TestDataPath("$PROJECT_ROOT")
-    @InnerTestClasses({})
+    @InnerTestClasses({
+})
     @RunWith(JUnit3RunnerWithInners.class)
     public static class NotNullAssertions extends AbstractBlackBoxCodegenTest {
         public void testAllFilesPresentInNotNullAssertions() throws Exception {
@@ -109,7 +115,8 @@ public class BlackBoxWithJavaCodegenTestGenerated extends AbstractBlackBoxCodege
 
     @TestMetadata("compiler/testData/codegen/boxWithJava/platformStatic")
     @TestDataPath("$PROJECT_ROOT")
-    @InnerTestClasses({})
+    @InnerTestClasses({
+})
     @RunWith(JUnit3RunnerWithInners.class)
     public static class PlatformStatic extends AbstractBlackBoxCodegenTest {
         public void testAllFilesPresentInPlatformStatic() throws Exception {
@@ -138,7 +145,8 @@ public class BlackBoxWithJavaCodegenTestGenerated extends AbstractBlackBoxCodege
 
     @TestMetadata("compiler/testData/codegen/boxWithJava/properties")
     @TestDataPath("$PROJECT_ROOT")
-    @InnerTestClasses({})
+    @InnerTestClasses({
+})
     @RunWith(JUnit3RunnerWithInners.class)
     public static class Properties extends AbstractBlackBoxCodegenTest {
         public void testAllFilesPresentInProperties() throws Exception {

@@ -30,7 +30,8 @@ import java.util.regex.Pattern;
 @SuppressWarnings("all")
 @TestMetadata("idea/testData/unifier")
 @TestDataPath("$PROJECT_ROOT")
-@InnerTestClasses({JetPsiUnifierTestGenerated.Equivalence.class})
+@InnerTestClasses({
+        JetPsiUnifierTestGenerated.Equivalence.class})
 @RunWith(JUnit3RunnerWithInners.class)
 public class JetPsiUnifierTestGenerated extends AbstractJetPsiUnifierTest {
     public void testAllFilesPresentInUnifier() throws Exception {
@@ -39,7 +40,11 @@ public class JetPsiUnifierTestGenerated extends AbstractJetPsiUnifierTest {
 
     @TestMetadata("idea/testData/unifier/equivalence")
     @TestDataPath("$PROJECT_ROOT")
-    @InnerTestClasses({Equivalence.ControlStructures.class, Equivalence.Declarations.class, Equivalence.Expressions.class, Equivalence.Types.class})
+    @InnerTestClasses({
+            Equivalence.ControlStructures.class,
+            Equivalence.Declarations.class,
+            Equivalence.Expressions.class,
+            Equivalence.Types.class})
     @RunWith(JUnit3RunnerWithInners.class)
     public static class Equivalence extends AbstractJetPsiUnifierTest {
         public void testAllFilesPresentInEquivalence() throws Exception {
@@ -48,7 +53,8 @@ public class JetPsiUnifierTestGenerated extends AbstractJetPsiUnifierTest {
 
         @TestMetadata("idea/testData/unifier/equivalence/controlStructures")
         @TestDataPath("$PROJECT_ROOT")
-        @InnerTestClasses({ControlStructures.Blocks.class})
+        @InnerTestClasses({
+                ControlStructures.Blocks.class})
         @RunWith(JUnit3RunnerWithInners.class)
         public static class ControlStructures extends AbstractJetPsiUnifierTest {
             public void testAllFilesPresentInControlStructures() throws Exception {
@@ -163,7 +169,10 @@ public class JetPsiUnifierTestGenerated extends AbstractJetPsiUnifierTest {
 
         @TestMetadata("idea/testData/unifier/equivalence/declarations")
         @TestDataPath("$PROJECT_ROOT")
-        @InnerTestClasses({Declarations.ClassesAndObjects.class, Declarations.LocalCallables.class, Declarations.TypeParameters.class})
+        @InnerTestClasses({
+                Declarations.ClassesAndObjects.class,
+                Declarations.LocalCallables.class,
+                Declarations.TypeParameters.class})
         @RunWith(JUnit3RunnerWithInners.class)
         public static class Declarations extends AbstractJetPsiUnifierTest {
             public void testAllFilesPresentInDeclarations() throws Exception {
@@ -235,7 +244,8 @@ public class JetPsiUnifierTestGenerated extends AbstractJetPsiUnifierTest {
 
             @TestMetadata("idea/testData/unifier/equivalence/declarations/localCallables")
             @TestDataPath("$PROJECT_ROOT")
-            @InnerTestClasses({LocalCallables.Lambdas.class})
+            @InnerTestClasses({
+                    LocalCallables.Lambdas.class})
             @RunWith(JUnit3RunnerWithInners.class)
             public static class LocalCallables extends AbstractJetPsiUnifierTest {
                 public void testAllFilesPresentInLocalCallables() throws Exception {
@@ -324,7 +334,14 @@ public class JetPsiUnifierTestGenerated extends AbstractJetPsiUnifierTest {
 
         @TestMetadata("idea/testData/unifier/equivalence/expressions")
         @TestDataPath("$PROJECT_ROOT")
-        @InnerTestClasses({Expressions.CallableReferences.class, Expressions.Calls.class, Expressions.Casts.class, Expressions.Conventions.class, Expressions.Misc.class, Expressions.Super.class, Expressions.This.class})
+        @InnerTestClasses({
+                Expressions.CallableReferences.class,
+                Expressions.Calls.class,
+                Expressions.Casts.class,
+                Expressions.Conventions.class,
+                Expressions.Misc.class,
+                Expressions.Super.class,
+                Expressions.This.class})
         @RunWith(JUnit3RunnerWithInners.class)
         public static class Expressions extends AbstractJetPsiUnifierTest {
             public void testAllFilesPresentInExpressions() throws Exception {
@@ -474,7 +491,9 @@ public class JetPsiUnifierTestGenerated extends AbstractJetPsiUnifierTest {
 
             @TestMetadata("idea/testData/unifier/equivalence/expressions/conventions")
             @TestDataPath("$PROJECT_ROOT")
-            @InnerTestClasses({Conventions.Assignments.class, Conventions.Invoke.class})
+            @InnerTestClasses({
+                    Conventions.Assignments.class,
+                    Conventions.Invoke.class})
             @RunWith(JUnit3RunnerWithInners.class)
             public static class Conventions extends AbstractJetPsiUnifierTest {
                 public void testAllFilesPresentInConventions() throws Exception {

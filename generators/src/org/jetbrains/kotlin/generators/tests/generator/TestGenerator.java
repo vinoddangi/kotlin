@@ -212,21 +212,27 @@ public class TestGenerator {
     private static void generateInnerClassesAnnotation(Printer p, TestClassModel testClassModel) {
         Collection<TestClassModel> innerTestClasses = testClassModel.getInnerTestClasses();
         if (innerTestClasses.isEmpty()) return;
-        p.print("@InnerTestClasses({");
+        p.println("@InnerTestClasses({");
+
+        p.pushIndent();
+        p.pushIndent();
 
         boolean isFirst = true;
         for (TestClassModel innerTestClass : innerTestClasses) {
             if (!innerTestClass.isEmpty()) {
                 if (!isFirst) {
-                    p.printWithNoIndent(", ");
+                    p.printWithNoIndent(",\n");
                 }
                 else {
                     isFirst = false;
                 }
 
-                p.printWithNoIndent(testClassModel.getName(), ".", innerTestClass.getName(), ".class");
+                p.print(testClassModel.getName(), ".", innerTestClass.getName(), ".class");
             }
         }
+
+        p.popIndent();
+        p.popIndent();
         p.printlnWithNoIndent("})");
     }
 
