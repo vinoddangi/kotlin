@@ -74,7 +74,7 @@ public abstract class AbstractBlackBoxInlineCodegenTest : AbstractBlackBoxCodege
             }, 0)
             val sourceFiles = outputFile.sourceFiles
             assert(sourceFiles.size() == 1, "Wrong number of source files ${sourceFiles.size()}")
-            result.add(SMAPAndFile(debugInfo.get(), sourceFiles.first().getCanonicalPath()))
+            result.add(SMAPAndFile(debugInfo.get(), FileUtil.toSystemIndependentName(sourceFiles.first().getAbsolutePath())))
         }
 
         return result
@@ -101,7 +101,7 @@ public abstract class AbstractBlackBoxInlineCodegenTest : AbstractBlackBoxCodege
         for (file: JetFile in mutableList) {
             val smap = extractSmapFromSource(file)
             if (smap != null) {
-                sourceData.add(SMAPAndFile(smap, file.getVirtualFile().getCanonicalPath()!!))
+                sourceData.add(SMAPAndFile(smap, FileUtil.toSystemIndependentName(file.getVirtualFile().getCanonicalPath()!!)))
             }
         }
         val compiledData = extractSMAPFromClasses().toMap { it.sourceFile }
