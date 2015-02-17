@@ -70,7 +70,7 @@ fun bar() {}
 //FILE:c.kt
 package c
 
-import c.<!CANNOT_IMPORT_FROM_ELEMENT!>C<!>.*
+import c.<!CANNOT_STAR_IMPORT_FROM_SINGLETON!>C<!>.*
 
 object C {
     fun f() {
