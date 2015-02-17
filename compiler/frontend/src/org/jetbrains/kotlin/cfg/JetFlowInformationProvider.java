@@ -57,9 +57,7 @@ import org.jetbrains.kotlin.resolve.*;
 import org.jetbrains.kotlin.resolve.bindingContextUtil.BindingContextUtilPackage;
 import org.jetbrains.kotlin.resolve.calls.callUtil.CallUtilPackage;
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall;
-import org.jetbrains.kotlin.resolve.scopes.receivers.ExpressionReceiver;
 import org.jetbrains.kotlin.resolve.scopes.receivers.ReceiverValue;
-import org.jetbrains.kotlin.resolve.scopes.receivers.ThisReceiver;
 import org.jetbrains.kotlin.types.JetType;
 import org.jetbrains.kotlin.types.expressions.ExpressionTypingUtils;
 
@@ -324,19 +322,24 @@ public class JetFlowInformationProvider {
                                 new VariableInitContext(instruction, reportedDiagnosticMap, in, out, lexicalScopeVariableInfo);
                         if (ctxt.variableDescriptor == null) return;
                         if (instruction instanceof ReadValueInstruction) {
-                            JetElement element = ((ReadValueInstruction) instruction).getElement();
+                            ReadValueInstruction readValueInstruction = (ReadValueInstruction) instruction;
+                            JetElement element = readValueInstruction.getElement();
                             boolean error = checkBackingField(ctxt, element);
-                            if (!error && declaredVariables.contains(ctxt.variableDescriptor)) {
+                            if (!error &&
+                                PseudocodeUtil.isThisOrEmptyDispatchReceiver(readValueInstruction, trace.getBindingContext()) &&
+                                declaredVariables.contains(ctxt.variableDescriptor)) {
                                 checkIsInitialized(ctxt, element, varWithUninitializedErrorGenerated);
                             }
                             return;
                         }
                         if (!(instruction instanceof WriteValueInstruction)) return;
-                        JetElement element = ((WriteValueInstruction) instruction).getlValue();
+                        WriteValueInstruction writeValueInstruction = (WriteValueInstruction) instruction;
+                        JetElement element = writeValueInstruction.getlValue();
                         boolean error = checkBackingField(ctxt, element);
                         if (!(element instanceof JetExpression)) return;
                         if (!error) {
-                            error = checkValReassignment(ctxt, (JetExpression) element, varWithValReassignErrorGenerated);
+                            error = checkValReassignment(ctxt, (JetExpression) element, writeValueInstruction,
+                                                         varWithValReassignErrorGenerated);
                         }
                         if (!error && processClassOrObject) {
                             error = checkAssignmentBeforeDeclaration(ctxt, (JetExpression) element);
@@ -367,6 +370,7 @@ public class JetFlowInformationProvider {
     ) {
         if (!(element instanceof JetSimpleNameExpression)) return;
 
+
         boolean isInitialized = ctxt.exitInitState.isInitialized;
         VariableDescriptor variableDescriptor = ctxt.variableDescriptor;
         if (variableDescriptor instanceof PropertyDescriptor) {
@@ -391,6 +395,7 @@ public class JetFlowInformationProvider {
     private boolean checkValReassignment(
             @NotNull VariableInitContext ctxt,
             @NotNull JetExpression expression,
+            @NotNull WriteValueInstruction writeValueInstruction,
             @NotNull Collection<VariableDescriptor> varWithValReassignErrorGenerated
     ) {
         VariableDescriptor variableDescriptor = ctxt.variableDescriptor;
@@ -429,8 +434,9 @@ public class JetFlowInformationProvider {
                 return true;
             }
         }
-        if ((isInitializedNotHere || !hasBackingField) && !variableDescriptor.isVar()
-                && !varWithValReassignErrorGenerated.contains(variableDescriptor)) {
+        if ((isInitializedNotHere || !hasBackingField ||
+             !PseudocodeUtil.isThisOrEmptyDispatchReceiver(writeValueInstruction, trace.getBindingContext())) &&
+            !variableDescriptor.isVar() && !varWithValReassignErrorGenerated.contains(variableDescriptor)) {
             boolean hasReassignMethodReturningUnit = false;
             JetSimpleNameExpression operationReference = null;
             PsiElement parent = expression.getParent();
@@ -806,7 +812,14 @@ public class JetFlowInformationProvider {
                                 new TailRecursionDetector(subroutine, callInstruction)
                         );
 
-                        boolean sameDispatchReceiver = sameDispatchReceiver(resolvedCall);
+                        // A tail call is not allowed to change dispatch receiver
+                        //   class C {
+                        //       fun foo(other: C) {
+                        //           other.foo(this) // not a tail call
+                        //       }
+                        //   }
+                        boolean sameDispatchReceiver =
+                                PseudocodeUtil.isThisOrEmptyDispatchReceiver(resolvedCall, trace.getBindingContext());
 
                         TailRecursionKind kind = isTail && sameDispatchReceiver ? TAIL_CALL : NON_TAIL;
 
@@ -841,33 +854,6 @@ public class JetFlowInformationProvider {
         if (!hasTailCalls) {
             trace.report(Errors.NO_TAIL_CALLS_FOUND.on((JetNamedFunction) subroutine));
         }
-    }
-
-    private boolean sameDispatchReceiver(ResolvedCall<?> resolvedCall) {
-        // A tail call is not allowed to change dispatch receiver
-        //   class C {
-        //       fun foo(other: C) {
-        //           other.foo(this) // not a tail call
-        //       }
-        //   }
-        ReceiverParameterDescriptor dispatchReceiverParameter = resolvedCall.getResultingDescriptor().getDispatchReceiverParameter();
-        ReceiverValue dispatchReceiverValue = resolvedCall.getDispatchReceiver();
-        if (dispatchReceiverParameter == null || !dispatchReceiverValue.exists()) return true;
-
-        DeclarationDescriptor classDescriptor = null;
-        if (dispatchReceiverValue instanceof ThisReceiver) {
-            // foo() -- implicit receiver
-            classDescriptor = ((ThisReceiver) dispatchReceiverValue).getDeclarationDescriptor();
-        }
-        else if (dispatchReceiverValue instanceof ExpressionReceiver) {
-            JetExpression expression = JetPsiUtil.deparenthesize(((ExpressionReceiver) dispatchReceiverValue).getExpression());
-            if (expression instanceof JetThisExpression) {
-                // this.foo() -- explicit receiver
-                JetThisExpression thisExpression = (JetThisExpression) expression;
-                classDescriptor = trace.get(BindingContext.REFERENCE_TARGET, thisExpression.getInstanceReference());
-            }
-        }
-        return dispatchReceiverParameter.getContainingDeclaration() == classDescriptor;
     }
 
     private static TailRecursionKind combineKinds(TailRecursionKind kind, @Nullable TailRecursionKind existingKind) {
