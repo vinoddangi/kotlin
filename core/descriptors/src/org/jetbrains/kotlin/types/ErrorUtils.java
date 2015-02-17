@@ -36,6 +36,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import static kotlin.KotlinPackage.joinToString;
+
 public class ErrorUtils {
 
     private static final ModuleDescriptor ERROR_MODULE;
@@ -346,7 +348,7 @@ public class ErrorUtils {
 
     @NotNull
     public static JetType createErrorType(@NotNull String debugMessage) {
-        return new ErrorTypeImpl(createErrorTypeConstructor(debugMessage), createErrorScope(debugMessage));
+        return createErrorTypeWithArguments(debugMessage, Collections.<TypeProjection>emptyList());
     }
 
     @NotNull
@@ -461,7 +463,7 @@ public class ErrorUtils {
 
         @Override
         public String toString() {
-            return constructor.toString();
+            return constructor.toString() + (arguments.isEmpty() ? "" : joinToString(arguments, ", ", "<", ">", -1, "..."));
         }
     }
 
