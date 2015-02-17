@@ -5,3 +5,5 @@ inline fun call(inlineOptions(InlineOption.ONLY_LOCAL_RETURN) init: () -> Unit) 
         init()
     }()
 }
+
+//SMAP ABSENT
