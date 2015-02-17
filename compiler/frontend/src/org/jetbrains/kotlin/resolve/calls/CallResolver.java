@@ -42,6 +42,7 @@ import org.jetbrains.kotlin.resolve.calls.util.DelegatingCall;
 import org.jetbrains.kotlin.resolve.descriptorUtil.DescriptorUtilPackage;
 import org.jetbrains.kotlin.resolve.scopes.JetScope;
 import org.jetbrains.kotlin.resolve.scopes.receivers.ExpressionReceiver;
+import org.jetbrains.kotlin.resolve.scopes.receivers.ReceiverValue;
 import org.jetbrains.kotlin.types.JetType;
 import org.jetbrains.kotlin.types.expressions.ExpressionTypingContext;
 import org.jetbrains.kotlin.types.expressions.ExpressionTypingServices;
@@ -295,24 +296,33 @@ public class CallResolver {
             @NotNull BasicCallResolutionContext context,
             @NotNull JetConstructorDelegationReferenceExpression calleeExpression
     ) {
-        ClassDescriptor classDescriptor = getClassDescriptorByConstructorContext(context);
-        Collection<ConstructorDescriptor> constructors =
-                calleeExpression.isThis() ? classDescriptor.getConstructors() :
-                DescriptorUtilPackage.getSuperClass(classDescriptor).getConstructors();
+        ClassDescriptor currentClassDescriptor = getClassDescriptorByConstructorContext(context);
+        ClassDescriptor delegatedClassDescriptor = calleeExpression.isThis() ? currentClassDescriptor :
+                                                   DescriptorUtilPackage.getSuperClass(currentClassDescriptor);
+        Collection<ConstructorDescriptor> constructors = delegatedClassDescriptor.getConstructors();
 
         if (constructors.isEmpty()) {
             context.trace.report(NO_CONSTRUCTOR.on(CallUtilPackage.getValueArgumentListOrElement(context.call)));
             return checkArgumentTypesAndFail(context);
         }
 
-        if (!calleeExpression.isThis() && classDescriptor.getUnsubstitutedPrimaryConstructor() != null) {
+        if (!calleeExpression.isThis() && currentClassDescriptor.getUnsubstitutedPrimaryConstructor() != null) {
             context.trace.report(EXPECTED_PRIMARY_CONSTRUCTOR_DELEGATION_CALL.on(
                     (JetConstructorDelegationCall) calleeExpression.getParent()
             ));
         }
 
-        List<ResolutionCandidate<CallableDescriptor>> candidates =
-                ResolutionCandidate.<CallableDescriptor>convertCollection(context.call, constructors);
+        List<ResolutionCandidate<CallableDescriptor>> candidates = Lists.newArrayList();
+        ReceiverValue constructorDispatchReceiver = !delegatedClassDescriptor.isInner() ? ReceiverValue.NO_RECEIVER :
+                                                    ((ClassDescriptor) delegatedClassDescriptor.getContainingDeclaration()).
+                                                            getThisAsReceiverParameter().getValue();
+
+        for (CallableDescriptor descriptor : constructors) {
+            candidates.add(ResolutionCandidate.create(
+                    context.call, descriptor, constructorDispatchReceiver, ReceiverValue.NO_RECEIVER,
+                    ExplicitReceiverKind.NO_EXPLICIT_RECEIVER
+            ));
+        }
 
         return computeTasksFromCandidatesAndResolvedCall(context, calleeExpression, candidates, CallTransformer.FUNCTION_CALL_TRANSFORMER);
     }

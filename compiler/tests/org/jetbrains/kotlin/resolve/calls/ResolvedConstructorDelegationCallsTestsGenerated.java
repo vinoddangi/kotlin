@@ -36,6 +36,18 @@ public class ResolvedConstructorDelegationCallsTestsGenerated extends AbstractRe
         JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), new File("compiler/testData/resolveConstructorDelegationCalls"), Pattern.compile("^(.+)\\.kt$"), true);
     }
 
+    @TestMetadata("innerClassDelegatingPrimary.kt")
+    public void testInnerClassDelegatingPrimary() throws Exception {
+        String fileName = JetTestUtils.navigationMetadata("compiler/testData/resolveConstructorDelegationCalls/innerClassDelegatingPrimary.kt");
+        doTest(fileName);
+    }
+
+    @TestMetadata("innerClassDelegatingSecondary.kt")
+    public void testInnerClassDelegatingSecondary() throws Exception {
+        String fileName = JetTestUtils.navigationMetadata("compiler/testData/resolveConstructorDelegationCalls/innerClassDelegatingSecondary.kt");
+        doTest(fileName);
+    }
+
     @TestMetadata("superAnyEmpty.kt")
     public void testSuperAnyEmpty() throws Exception {
         String fileName = JetTestUtils.navigationMetadata("compiler/testData/resolveConstructorDelegationCalls/superAnyEmpty.kt");
