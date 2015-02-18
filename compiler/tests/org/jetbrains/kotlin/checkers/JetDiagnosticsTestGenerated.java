@@ -10086,6 +10086,12 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
                 doTest(fileName);
             }
 
+            @TestMetadata("ctrsAnnotationResolve.kt")
+            public void testCtrsAnnotationResolve() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/secondaryConstructors/ctrsAnnotationResolve.kt");
+                doTest(fileName);
+            }
+
             @TestMetadata("cyclicDelegationCalls.kt")
             public void testCyclicDelegationCalls() throws Exception {
                 String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/secondaryConstructors/cyclicDelegationCalls.kt");
