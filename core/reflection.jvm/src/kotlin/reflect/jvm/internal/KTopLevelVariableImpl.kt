@@ -16,26 +16,25 @@
 
 package kotlin.reflect.jvm.internal
 
-import java.lang.reflect.*
-import kotlin.reflect.*
+import org.jetbrains.kotlin.descriptors.PropertyDescriptor
+import org.jetbrains.kotlin.renderer.DescriptorRenderer
+import java.lang.reflect.Method
+import kotlin.reflect.KMutableTopLevelVariable
+import kotlin.reflect.KTopLevelVariable
 
 open class KTopLevelVariableImpl<out R>(
-        override val name: String,
-        protected val owner: KPackageImpl
-) : KTopLevelVariable<R>, KVariableImpl<R> {
-    // TODO: load the field from the corresponding package part
-    override val field: Field? get() = null
+        protected val owner: KPackageImpl,
+        computeDescriptor: () -> PropertyDescriptor
+) : DescriptorBasedProperty(computeDescriptor), KTopLevelVariable<R>, KVariableImpl<R> {
+    override val container: KCallableContainerImpl get() = owner
 
-    // TODO: extract, make lazy (weak?), use our descriptors knowledge, support Java fields
-    override val getter: Method = try {
-        owner.jClass.getMethod(getterName(name))
-    }
-    catch (e: NoSuchMethodException) {
-        throw NoSuchPropertyException(e)
-    }
+    override val name: String get() = descriptor.getName().asString()
+
+    override val getter: Method get() = super<DescriptorBasedProperty>.getter!!
 
     override fun get(): R {
         try {
+            [suppress("UNCHECKED_CAST")]
             return getter(null) as R
         }
         catch (e: java.lang.IllegalAccessException) {
@@ -44,26 +43,25 @@ open class KTopLevelVariableImpl<out R>(
     }
 
     override fun equals(other: Any?): Boolean =
-            other is KTopLevelVariableImpl<*> && name == other.name && owner == other.owner
+            other is KTopLevelVariableImpl<*> && descriptor == other.descriptor
 
     override fun hashCode(): Int =
-            name.hashCode() * 31 + owner.hashCode()
+            descriptor.hashCode()
 
     // TODO: include visibility, return type, maybe package
-    override fun toString(): String =
-            "val $name"
+    override fun toString(): String {
+        val descriptor = descriptor
+        val renderer = DescriptorRenderer.FQ_NAMES_IN_TYPES
+        val valVar = if (descriptor.isVar()) "var" else "val"
+        return "$valVar ${renderer.renderName(descriptor.getName())}"
+    }
 }
 
 class KMutableTopLevelVariableImpl<R>(
-        name: String,
-        owner: KPackageImpl
-) : KMutableTopLevelVariable<R>, KMutableVariableImpl<R>, KTopLevelVariableImpl<R>(name, owner) {
-    override val setter: Method = try {
-        owner.jClass.getMethod(setterName(name), getter.getReturnType())
-    }
-    catch (e: NoSuchMethodException) {
-        throw NoSuchPropertyException(e)
-    }
+        container: KPackageImpl,
+        computeDescriptor: () -> PropertyDescriptor
+) : KTopLevelVariableImpl<R>(container, computeDescriptor), KMutableTopLevelVariable<R>, KMutableVariableImpl<R> {
+    override val setter: Method get() = super<KTopLevelVariableImpl>.setter!!
 
     override fun set(value: R) {
         try {
@@ -73,7 +71,4 @@ class KMutableTopLevelVariableImpl<R>(
             throw kotlin.reflect.IllegalAccessException(e)
         }
     }
-
-    override fun toString(): String =
-            "var $name"
 }
