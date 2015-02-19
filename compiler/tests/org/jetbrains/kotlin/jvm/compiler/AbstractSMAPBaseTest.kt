@@ -77,16 +77,16 @@ public trait AbstractSMAPBaseTest {
         }.map { it ->
             SMAPAndFile(it.getValue().fold(null)
                                             {   (a, e): String? ->
-                                                    if (a == null) e.smap
+                                                    if (a == null) replaceHash(e.smap)
                                                     else if (e.smap == null) a
-                                                    else "$a\n${e.smap}"
+                                                    else "$a\n${replaceHash(e.smap)}"
                                             },
                         it.key)
         }.toMap { it.sourceFile }
 
         for (source in sourceData) {
             val data = compiledData[source.sourceFile]
-            Assert.assertEquals("Smap data differs for ${source.sourceFile}", source.smap, replaceHash(data?.smap?.trim()))
+            Assert.assertEquals("Smap data differs for ${source.sourceFile}", source.smap, data?.smap?.trim())
         }
     }
 
