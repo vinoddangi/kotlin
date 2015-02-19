@@ -43,17 +43,23 @@ import java.util.List;
 
 public class GenerationState {
     public interface GenerateClassFilter {
-        boolean shouldProcessClass(JetClassOrObject classOrObject);
-        boolean shouldProcessScript(JetScript script);
+        boolean shouldAnnotateClass(JetClassOrObject classOrObject);
+        boolean shouldGenerateClass(JetClassOrObject classOrObject);
+        boolean shouldGenerateScript(JetScript script);
 
         GenerateClassFilter GENERATE_ALL = new GenerateClassFilter() {
             @Override
-            public boolean shouldProcessClass(JetClassOrObject classOrObject) {
+            public boolean shouldAnnotateClass(JetClassOrObject classOrObject) {
                 return true;
             }
 
             @Override
-            public boolean shouldProcessScript(JetScript script) {
+            public boolean shouldGenerateClass(JetClassOrObject classOrObject) {
+                return true;
+            }
+
+            @Override
+            public boolean shouldGenerateScript(JetScript script) {
                 return true;
             }
         };
