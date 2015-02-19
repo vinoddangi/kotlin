@@ -716,22 +716,11 @@ public class CompileKotlinAgainstInlineKotlinTestGenerated extends AbstractCompi
 
     @TestMetadata("compiler/testData/codegen/boxInline/smap")
     @TestDataPath("$PROJECT_ROOT")
+    @InnerTestClasses({Smap.Anonymous.class})
     @RunWith(JUnit3RunnerWithInners.class)
     public static class Smap extends AbstractCompileKotlinAgainstInlineKotlinTest {
         public void testAllFilesPresentInSmap() throws Exception {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), new File("compiler/testData/codegen/boxInline/smap"), Pattern.compile("^(.+)\\.1.kt$"), true);
-        }
-
-        @TestMetadata("anonymousLambda.1.kt")
-        public void testAnonymousLambda() throws Exception {
-            String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/boxInline/smap/anonymousLambda.1.kt");
-            doBoxTestWithInlineCheck(fileName);
-        }
-
-        @TestMetadata("anonymousObject.1.kt")
-        public void testAnonymousObject() throws Exception {
-            String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/boxInline/smap/anonymousObject.1.kt");
-            doBoxTestWithInlineCheck(fileName);
         }
 
         @TestMetadata("assertion.1.kt")
@@ -750,6 +739,51 @@ public class CompileKotlinAgainstInlineKotlinTestGenerated extends AbstractCompi
         public void testSmap() throws Exception {
             String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/boxInline/smap/smap.1.kt");
             doBoxTestWithInlineCheck(fileName);
+        }
+
+        @TestMetadata("compiler/testData/codegen/boxInline/smap/anonymous")
+        @TestDataPath("$PROJECT_ROOT")
+        @RunWith(JUnit3RunnerWithInners.class)
+        public static class Anonymous extends AbstractCompileKotlinAgainstInlineKotlinTest {
+            public void testAllFilesPresentInAnonymous() throws Exception {
+                JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), new File("compiler/testData/codegen/boxInline/smap/anonymous"), Pattern.compile("^(.+)\\.1.kt$"), true);
+            }
+
+            @TestMetadata("lambda.1.kt")
+            public void testLambda() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/boxInline/smap/anonymous/lambda.1.kt");
+                doBoxTestWithInlineCheck(fileName);
+            }
+
+            @TestMetadata("lambdaOnCallSite.1.kt")
+            public void testLambdaOnCallSite() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/boxInline/smap/anonymous/lambdaOnCallSite.1.kt");
+                doBoxTestWithInlineCheck(fileName);
+            }
+
+            @TestMetadata("lambdaOnInlineCallSite.1.kt")
+            public void testLambdaOnInlineCallSite() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/boxInline/smap/anonymous/lambdaOnInlineCallSite.1.kt");
+                doBoxTestWithInlineCheck(fileName);
+            }
+
+            @TestMetadata("object.1.kt")
+            public void testObject() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/boxInline/smap/anonymous/object.1.kt");
+                doBoxTestWithInlineCheck(fileName);
+            }
+
+            @TestMetadata("objectOnCallSite.1.kt")
+            public void testObjectOnCallSite() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/boxInline/smap/anonymous/objectOnCallSite.1.kt");
+                doBoxTestWithInlineCheck(fileName);
+            }
+
+            @TestMetadata("objectOnInlineCallSite.1.kt")
+            public void testObjectOnInlineCallSite() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/boxInline/smap/anonymous/objectOnInlineCallSite.1.kt");
+                doBoxTestWithInlineCheck(fileName);
+            }
         }
     }
 

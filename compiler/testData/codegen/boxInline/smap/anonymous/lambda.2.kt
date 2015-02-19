@@ -7,12 +7,12 @@ inline fun call(inlineOptions(InlineOption.ONLY_LOCAL_RETURN) init: () -> Unit) 
 }
 
 //SMAP
-//anonymousLambda.2.kt
+//lambda.2.kt
 //Kotlin
 //*S Kotlin
 //*F
-//+ 1 anonymousLambda.2.kt
-//builders/BuildersPackage$anonymousLambda_2$HASH$call$1
+//+ 1 lambda.2.kt
+//builders/BuildersPackage$lambda_2$HASH$call$1
 //*L
 //1#1,18:1
 //*E
