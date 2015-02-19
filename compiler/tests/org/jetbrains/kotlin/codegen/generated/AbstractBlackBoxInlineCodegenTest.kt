@@ -51,12 +51,11 @@ public abstract class AbstractBlackBoxInlineCodegenTest : AbstractBlackBoxCodege
         doTestMultiFile(inputFiles)
         try {
             InlineTestUtil.checkNoCallsToInline(initializedClassLoader.getAllGeneratedFiles())
+            checkSMAP(myFiles.getPsiFiles(), generateClassesInFile().asList())
         }
         catch (e: Throwable) {
             System.out.println(generateToText())
             throw rethrow(e)
         }
-
-        checkSMAP(myFiles.getPsiFiles(), generateClassesInFile().asList())
     }
 }
