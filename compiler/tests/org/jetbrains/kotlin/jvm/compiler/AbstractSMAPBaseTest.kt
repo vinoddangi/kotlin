@@ -25,6 +25,7 @@ import com.intellij.openapi.util.*
 import org.jetbrains.org.objectweb.asm.*
 import org.jetbrains.kotlin.test.*
 import org.junit.*
+import java.io.*
 
 public trait AbstractSMAPBaseTest {
 
@@ -43,23 +44,22 @@ public trait AbstractSMAPBaseTest {
             }, 0)
             val sourceFiles = outputFile.sourceFiles
             assert(sourceFiles.size() == 1, "Wrong number of source files ${sourceFiles.size()}")
-            result.add(SMAPAndFile(debugInfo.get(), FileUtil.toSystemIndependentName(sourceFiles.first().getAbsolutePath())))
+            result.add(SMAPAndFile.SMAPAndFile(debugInfo.get(), sourceFiles.first()))
         }
 
         return result
     }
 
-    private fun extractSmapFromSource(file: JetFile): String? {
+    private fun extractSmapFromSource(file: JetFile): SMAPAndFile? {
         val fileContent = file.getText();
         val smapPrefix = "//SMAP"
         if (InTextDirectivesUtils.isDirectiveDefined(fileContent, smapPrefix)) {
             InTextDirectivesUtils.findLinesWithPrefixesRemoved(fileContent, smapPrefix)
             var smapData = fileContent.substring(fileContent.indexOf(smapPrefix))
             smapData = smapData.replaceAll("//","").trim()
-            if (smapData.startsWith("SMAP ABSENT")) {
-                return null
-            }
-            return smapData
+
+            return SMAPAndFile(if (smapData.startsWith("SMAP ABSENT")) null else smapData,
+                               FileUtil.toSystemIndependentName(file.getVirtualFile().getCanonicalPath()!!))
         }
         return null;
     }
@@ -67,10 +67,7 @@ public trait AbstractSMAPBaseTest {
     fun checkSMAP(inputFiles: List<JetFile>, outputFiles: List<OutputFile>) {
         val sourceData = arrayListOf<SMAPAndFile>()
         for (file: JetFile in inputFiles) {
-            val smap = extractSmapFromSource(file)
-            if (smap != null) {
-                sourceData.add(SMAPAndFile(smap, FileUtil.toSystemIndependentName(file.getVirtualFile().getCanonicalPath()!!)))
-            }
+            extractSmapFromSource(file)?.let { sourceData.add(it) }
         }
         val compiledData = extractSMAPFromClasses(outputFiles).groupBy {
             it.sourceFile
@@ -111,5 +108,9 @@ public trait AbstractSMAPBaseTest {
         return data.substring(0, fileSectionStart) + cleaned + data.substring(lineSection)
     }
 
-    class SMAPAndFile(val smap: String?, val sourceFile: String)
+    class SMAPAndFile(val smap: String?, val sourceFile: String) {
+        class object {
+            fun SMAPAndFile(smap: String?, sourceFile: File) = SMAPAndFile(smap, FileUtil.toSystemIndependentName(sourceFile.getAbsolutePath()))
+        }
+    }
 }

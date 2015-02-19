@@ -784,6 +784,12 @@ public class BlackBoxInlineCodegenTestGenerated extends AbstractBlackBoxInlineCo
                 String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/boxInline/smap/anonymous/objectOnInlineCallSite.1.kt");
                 doTestMultiFileWithInlineCheck(fileName);
             }
+
+            @TestMetadata("objectOnInlineCallSite2.1.kt")
+            public void testObjectOnInlineCallSite2() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/codegen/boxInline/smap/anonymous/objectOnInlineCallSite2.1.kt");
+                doTestMultiFileWithInlineCheck(fileName);
+            }
         }
     }
 
