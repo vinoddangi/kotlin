@@ -12,3 +12,4 @@ public class MyActivity : Activity() {
 // 1 GETSTATIC
 // 4 INVOKEVIRTUAL
 // 2 CHECKCAST
+// 2  _\$_findCachedViewById

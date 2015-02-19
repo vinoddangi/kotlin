@@ -11,3 +11,4 @@ fun Activity.a() {
 // 2 GETSTATIC
 // 2 INVOKEVIRTUAL
 // 2 CHECKCAST
+// 2 Activity\.findViewById
