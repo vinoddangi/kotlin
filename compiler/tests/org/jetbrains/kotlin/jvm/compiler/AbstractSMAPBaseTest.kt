@@ -100,7 +100,7 @@ public trait AbstractSMAPBaseTest {
 
         val cleaned = files.map {
             val shortName = it.substring(it.lastIndexOf("/") + 1)
-            if (shortName.contains("Package$") && shortName.count {it == '$'} > 2) {
+            if (shortName.contains("Package$") && shortName.count {it == '$'} >= 2) {
                 val hash = it.substringAfter("$").substringAfter("$").substringBefore("$")
                 it.replace(hash, "HASH")
             } else {
