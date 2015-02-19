@@ -45,6 +45,7 @@ public class GenerationState {
     public interface GenerateClassFilter {
         boolean shouldAnnotateClass(JetClassOrObject classOrObject);
         boolean shouldGenerateClass(JetClassOrObject classOrObject);
+        boolean shouldGeneratePackagePart(JetFile jetFile);
         boolean shouldGenerateScript(JetScript script);
 
         GenerateClassFilter GENERATE_ALL = new GenerateClassFilter() {
@@ -60,6 +61,11 @@ public class GenerationState {
 
             @Override
             public boolean shouldGenerateScript(JetScript script) {
+                return true;
+            }
+
+            @Override
+            public boolean shouldGeneratePackagePart(JetFile jetFile) {
                 return true;
             }
         };

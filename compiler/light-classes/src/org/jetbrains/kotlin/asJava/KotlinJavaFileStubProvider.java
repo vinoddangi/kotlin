@@ -112,6 +112,11 @@ public class KotlinJavaFileStubProvider<T extends WithFileStubAndExtraDiagnostic
                         return new GenerationState.GenerateClassFilter() {
 
                             @Override
+                            public boolean shouldGeneratePackagePart(JetFile jetFile) {
+                                return true;
+                            }
+
+                            @Override
                             public boolean shouldAnnotateClass(JetClassOrObject classOrObject) {
                                 return shouldGenerateClass(classOrObject);
                             }
@@ -227,6 +232,11 @@ public class KotlinJavaFileStubProvider<T extends WithFileStubAndExtraDiagnostic
                     @Override
                     public GenerationState.GenerateClassFilter getGenerateClassFilter() {
                         return new GenerationState.GenerateClassFilter() {
+
+                            @Override
+                            public boolean shouldGeneratePackagePart(JetFile jetFile) {
+                                return true;
+                            }
 
                             @Override
                             public boolean shouldAnnotateClass(JetClassOrObject classOrObject) {

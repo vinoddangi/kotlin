@@ -135,6 +135,12 @@ public class KotlinBytecodeToolWindow extends JPanel implements Disposable {
                 }
 
                 GenerationState.GenerateClassFilter generateClassFilter = new GenerationState.GenerateClassFilter() {
+
+                    @Override
+                    public boolean shouldGeneratePackagePart(JetFile file) {
+                        return file == jetFile;
+                    }
+
                     @Override
                     public boolean shouldAnnotateClass(JetClassOrObject classOrObject) {
                         return true;
