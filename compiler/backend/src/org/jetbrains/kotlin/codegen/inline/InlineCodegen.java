@@ -233,7 +233,6 @@ public class InlineCodegen extends CallGenerator {
 
     private InlineResult inlineCall(SMAPAndMethodNode nodeAndSmap) {
         SourceInfo sourceInfo = nodeAndSmap.getClassSMAP().getSourceInfo();
-        sourceMapper.visitSource(sourceInfo.getSource(), sourceInfo.getPathOrCleanFQN());
 
         MethodNode node = nodeAndSmap.getNode();
         ReifiedTypeParametersUsages reificationResult = reifiedTypeInliner.reifyInstructions(node.instructions);

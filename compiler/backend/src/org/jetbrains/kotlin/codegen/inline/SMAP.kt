@@ -156,6 +156,10 @@ trait SourceMapper {
         throw RuntimeException("fail")
     }
 
+    open fun endMapping() {
+        parent?.visitOrigin()
+    }
+
     class object {
 
         fun flushToClassBuilder(mapper: SourceMapper, v: ClassBuilder) {
@@ -168,9 +172,12 @@ trait SourceMapper {
         fun createFromSmap(smap: SMAP): DefaultSourceMapper {
             val sourceMapper = DefaultSourceMapper(smap.sourceInfo, null)
             smap.fileMappings.forEach { fileMapping ->
-                sourceMapper.visitSource(fileMapping.name, fileMapping.path)
-                fileMapping.lineMappings.forEach {
-                    sourceMapper.lastVisited!!.mapNewInterval(it.source, it.dest, it.range)
+                //default one mapped through sourceInfo
+                if (smap.default != fileMapping) {
+                    sourceMapper.visitSource(fileMapping.name, fileMapping.path)
+                    fileMapping.lineMappings.forEach {
+                        sourceMapper.lastVisited!!.mapNewInterval(it.source, it.dest, it.range)
+                    }
                 }
             }
 
@@ -271,6 +278,9 @@ class SMAP(fileMappings: List<FileMapping>) {
     val sourceInfo: SourceInfo
     {
         val originalMapping = default
+        if (originalMapping.lineMappings.size() != 1) {
+            throw RuntimeException("Wring smap format: default mapping has several range entries " + originalMapping)
+        }
         val defaultMapping = originalMapping.lineMappings[0]
         sourceInfo = SourceInfo(originalMapping.name, originalMapping.path, defaultMapping.source + defaultMapping.range - 1)
     }
@@ -313,10 +323,6 @@ class RawFileMapping(val name: String, val path: String) {
                 rangeMapping = RangeMapping(source, dest)
                 rangeMappings.add(rangeMapping)
             }
-
-//            if (dest > 21 && name.contains("1.kt")) {
-//                println("x")
-//            }
 
             lineMappings.put(source, dest)
             lastMappedWithNewIndex = source;

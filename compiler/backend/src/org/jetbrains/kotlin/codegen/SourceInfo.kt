@@ -35,7 +35,7 @@ data public class SourceInfo(val source: String, val pathOrCleanFQN: String, val
             val dollarIndex = internalClassName.indexOf('$')
             val cleanedClassFqName = if (!isTopLevel || dollarIndex < 0) internalClassName else internalClassName.substring(0, dollarIndex)
 
-            return SourceInfo(element.getContainingJetFile().getName(), cleanedClassFqName, lineNumbers)
+            return SourceInfo(element.getContainingJetFile().getName(), cleanedClassFqName, lineNumbers!!)
         }
     }
 
