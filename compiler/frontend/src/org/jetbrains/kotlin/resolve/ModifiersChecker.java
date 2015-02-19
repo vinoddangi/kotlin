@@ -202,9 +202,10 @@ public class ModifiersChecker {
                     checkIllegalInThisContextModifiers(modifierListOwner, Collections.singletonList(INNER_KEYWORD));
                     break;
                 case IN_TRAIT:
-                    if (modifierListOwner instanceof JetClass) {
-                        trace.report(INNER_CLASS_IN_TRAIT.on((JetClass) modifierListOwner));
-                    }
+                    trace.report(INNER_CLASS_IN_TRAIT.on(modifierListOwner));
+                    break;
+                case IN_OBJECT:
+                    trace.report(INNER_CLASS_IN_OBJECT.on(modifierListOwner));
                     break;
             }
             return;
@@ -225,7 +226,8 @@ public class ModifiersChecker {
     private enum InnerModifierCheckResult {
         ALLOWED,
         ILLEGAL_POSITION,
-        IN_TRAIT
+        IN_TRAIT,
+        IN_OBJECT,
     }
 
     @NotNull
@@ -237,6 +239,9 @@ public class ModifiersChecker {
         if (!(containingDeclaration instanceof ClassDescriptor)) return InnerModifierCheckResult.ILLEGAL_POSITION;
         if (((ClassDescriptor) containingDeclaration).getKind() == ClassKind.TRAIT) {
             return InnerModifierCheckResult.IN_TRAIT;
+        }
+        else if (DescriptorUtils.isClassObject(containingDeclaration) || DescriptorUtils.isObject(containingDeclaration)) {
+            return InnerModifierCheckResult.IN_OBJECT;
         }
         else {
             return InnerModifierCheckResult.ALLOWED;
