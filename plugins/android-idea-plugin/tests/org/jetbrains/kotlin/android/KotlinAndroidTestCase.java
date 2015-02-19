@@ -43,6 +43,7 @@ import com.intellij.testFramework.TestLogger;
 import com.intellij.testFramework.builders.JavaModuleFixtureBuilder;
 import com.intellij.testFramework.fixtures.*;
 import com.intellij.testFramework.fixtures.impl.CodeInsightTestFixtureImpl;
+import com.intellij.testFramework.fixtures.impl.GlobalInspectionContextForTests;
 import org.jetbrains.android.facet.AndroidFacet;
 import org.jetbrains.android.facet.AndroidRootUtil;
 import org.jetbrains.annotations.NotNull;
@@ -294,10 +295,10 @@ public abstract class KotlinAndroidTestCase extends KotlinAndroidTestCaseBase {
         scope.invalidate();
 
         final InspectionManagerEx inspectionManager = (InspectionManagerEx)InspectionManager.getInstance(getProject());
-        final GlobalInspectionContextImpl globalContext =
+        final GlobalInspectionContextForTests globalContext =
                 CodeInsightTestFixtureImpl.createGlobalContextForTool(scope, getProject(), inspectionManager, wrapper);
 
-        InspectionTestUtil.runTool(wrapper, scope, globalContext, inspectionManager);
+        InspectionTestUtil.runTool(wrapper, scope, globalContext);
         InspectionTestUtil.compareToolResults(globalContext, wrapper, false, getTestDataPath() + globalTestDir);
     }
 
