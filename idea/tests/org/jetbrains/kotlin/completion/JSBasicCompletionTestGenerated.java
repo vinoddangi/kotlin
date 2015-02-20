@@ -604,6 +604,18 @@ public class JSBasicCompletionTestGenerated extends AbstractJSBasicCompletionTes
             doTest(fileName);
         }
 
+        @TestMetadata("NestedClassesOnClassLiteral.kt")
+        public void testNestedClassesOnClassLiteral() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("idea/testData/completion/basic/common/NestedClassesOnClassLiteral.kt");
+            doTest(fileName);
+        }
+
+        @TestMetadata("NestedClassesOnDefaultObjectLiteral.kt")
+        public void testNestedClassesOnDefaultObjectLiteral() throws Exception {
+            String fileName = JetTestUtils.navigationMetadata("idea/testData/completion/basic/common/NestedClassesOnDefaultObjectLiteral.kt");
+            doTest(fileName);
+        }
+
         @TestMetadata("NoAutoInsertionOfNotImported.kt")
         public void testNoAutoInsertionOfNotImported() throws Exception {
             String fileName = JetTestUtils.navigationMetadata("idea/testData/completion/basic/common/NoAutoInsertionOfNotImported.kt");
