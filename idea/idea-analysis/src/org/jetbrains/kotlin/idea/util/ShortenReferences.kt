@@ -330,7 +330,7 @@ public class ShortenReferences(val options: (JetElement) -> Options = { Options.
             val selectorCopy = selector.copy() as JetReferenceExpression
             val newContext = selectorCopy.analyzeInContext(scope)
             val targetsWhenShort = (selectorCopy.getCalleeExpressionIfAny() as JetReferenceExpression).targets(newContext)
-            val targetsMatch = targetsWhenShort.singleOrNull()?.asString() == target.asString()
+            val targetsMatch = targetsMatch(target, targetsWhenShort)
 
             if (receiver is JetThisExpression) {
                 if (!targetsMatch) return false
@@ -354,6 +354,15 @@ public class ShortenReferences(val options: (JetElement) -> Options = { Options.
 
             processQualifiedElement(qualifiedExpression, target, targetsMatch)
             return true
+        }
+
+        private fun targetsMatch(target: DeclarationDescriptor, targetsWhenShort: Collection<DeclarationDescriptor>): Boolean {
+            val targetWhenShort = targetsWhenShort.singleOrNull() ?: return false
+            if (targetWhenShort.asString() == target.asString()) return true
+
+            if (target is ClassDescriptor && target.getDefaultObjectDescriptor()?.asString() == targetWhenShort.asString()) return true
+
+            return false
         }
 
         override fun qualifier(element: JetQualifiedExpression) = element.getReceiverExpression()
