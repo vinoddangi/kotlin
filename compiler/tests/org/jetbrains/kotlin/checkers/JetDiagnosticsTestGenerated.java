@@ -1463,6 +1463,12 @@ public class JetDiagnosticsTestGenerated extends AbstractJetDiagnosticsTest {
                 doTest(fileName);
             }
 
+            @TestMetadata("InnerClassAccessThroughClassObject.kt")
+            public void testInnerClassAccessThroughClassObject() throws Exception {
+                String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/classObjects/InnerClassAccessThroughClassObject.kt");
+                doTest(fileName);
+            }
+
             @TestMetadata("InnerClassClassObject.kt")
             public void testInnerClassClassObject() throws Exception {
                 String fileName = JetTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/classObjects/InnerClassClassObject.kt");
