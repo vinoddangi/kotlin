@@ -72,7 +72,7 @@ class KClassImpl<T>(override val jClass: Class<T>) : KCallableContainerImpl(), K
             return KMemberPropertyImpl<T, Any>(this, computeDescriptor)
         }
         else {
-            return KForeignMemberProperty<T, Any>(name, this)
+            return KForeignMemberProperty<T, Any>(this, computeDescriptor)
         }
     }
 
@@ -83,7 +83,7 @@ class KClassImpl<T>(override val jClass: Class<T>) : KCallableContainerImpl(), K
             return KMutableMemberPropertyImpl<T, Any>(this, computeDescriptor)
         }
         else {
-            return KMutableForeignMemberProperty<T, Any>(name, this)
+            return KMutableForeignMemberProperty<T, Any>(this, computeDescriptor)
         }
     }
 

@@ -16,15 +16,22 @@
 
 package kotlin.reflect.jvm.internal
 
-import java.lang.reflect.*
-import kotlin.reflect.*
+import org.jetbrains.kotlin.descriptors.PropertyDescriptor
+import org.jetbrains.kotlin.renderer.DescriptorRenderer
+import java.lang.reflect.Field
+import java.lang.reflect.Method
+import kotlin.reflect.KMemberProperty
+import kotlin.reflect.KMutableMemberProperty
+import kotlin.reflect.NoSuchPropertyException
 
 open class KForeignMemberProperty<T : Any, out R>(
-        override val name: String,
-        protected val owner: KClassImpl<T>
-) : KMemberProperty<T, R>, KPropertyImpl<R> {
+        override val container: KClassImpl<T>,
+        computeDescriptor: () -> PropertyDescriptor
+) : DescriptorBasedProperty(computeDescriptor), KMemberProperty<T, R>, KPropertyImpl<R> {
+    override val name: String get() = descriptor.getName().asString()
+
     override val field: Field = try {
-        owner.jClass.getField(name)
+        container.jClass.getField(name)
     }
     catch (e: NoSuchFieldException) {
         throw NoSuchPropertyException(e)
@@ -34,6 +41,7 @@ open class KForeignMemberProperty<T : Any, out R>(
 
     override fun get(receiver: T): R {
         try {
+            [suppress("UNCHECKED_CAST")]
             return field.get(receiver) as R
         }
         catch (e: java.lang.IllegalAccessException) {
@@ -42,20 +50,25 @@ open class KForeignMemberProperty<T : Any, out R>(
     }
 
     override fun equals(other: Any?): Boolean =
-            other is KForeignMemberProperty<*, *> && name == other.name && owner == other.owner
+            other is KForeignMemberProperty<*, *> && descriptor == other.descriptor
 
     override fun hashCode(): Int =
-            name.hashCode() * 31 + owner.hashCode()
+            descriptor.hashCode()
 
     // TODO: include visibility, return type
-    override fun toString(): String =
-            "val ${owner.jClass.getName()}.$name"
+    override fun toString(): String {
+        val descriptor = descriptor
+        val renderer = DescriptorRenderer.FQ_NAMES_IN_TYPES
+        val valVar = if (descriptor.isVar()) "var" else "val"
+        val receiverType = descriptor.getDispatchReceiverParameter()!!.getType()
+        return "$valVar ${renderer.renderType(receiverType)}.${renderer.renderName(descriptor.getName())}"
+    }
 }
 
 class KMutableForeignMemberProperty<T : Any, R>(
-        name: String,
-        owner: KClassImpl<T>
-) : KMutableMemberProperty<T, R>, KMutablePropertyImpl<R>, KForeignMemberProperty<T, R>(name, owner) {
+        container: KClassImpl<T>,
+        computeDescriptor: () -> PropertyDescriptor
+) : KForeignMemberProperty<T, R>(container, computeDescriptor), KMutableMemberProperty<T, R>, KMutablePropertyImpl<R> {
     override val setter: Method? get() = null
 
     override fun set(receiver: T, value: R) {
@@ -66,7 +79,4 @@ class KMutableForeignMemberProperty<T : Any, R>(
             throw kotlin.reflect.IllegalAccessException(e)
         }
     }
-
-    override fun toString(): String =
-            "var ${owner.jClass.getName()}.$name"
 }

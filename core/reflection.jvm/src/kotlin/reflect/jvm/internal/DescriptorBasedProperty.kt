@@ -47,7 +47,7 @@ abstract class DescriptorBasedProperty(computeDescriptor: () -> PropertyDescript
         PropertyProtoData(proto, property.nameResolver, proto.getExtension(JvmProtoBuf.propertySignature))
     }
 
-    val field: Field? by ReflectProperties.lazySoft {
+    open val field: Field? by ReflectProperties.lazySoft {
         val proto = protoData
         if (!proto.signature.hasField()) null
         else container.findFieldBySignature(proto.proto, proto.signature.getField(), proto.nameResolver)
