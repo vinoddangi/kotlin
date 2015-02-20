@@ -16,13 +16,16 @@
 
 package kotlin.reflect.jvm.internal
 
-import kotlin.jvm.internal.KotlinPackage
-import kotlin.reflect.*
+import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.jetbrains.kotlin.descriptors.PackageViewDescriptor
 import org.jetbrains.kotlin.load.java.structure.reflect.classId
-import org.jetbrains.kotlin.name.Name
-import org.jetbrains.kotlin.descriptors.PropertyDescriptor
+import org.jetbrains.kotlin.platform.JavaToKotlinClassMap
 import org.jetbrains.kotlin.resolve.scopes.JetScope
+import org.jetbrains.kotlin.types.JetType
+import org.jetbrains.kotlin.types.Variance
+import kotlin.jvm.internal.KotlinPackage
+import kotlin.reflect.*
+import kotlin.reflect.jvm.kotlin
 
 class KPackageImpl(override val jClass: Class<*>) : KCallableContainerImpl(), KPackage {
     val descriptor by ReflectProperties.lazySoft {(): PackageViewDescriptor ->
@@ -48,11 +51,13 @@ class KPackageImpl(override val jClass: Class<*>) : KCallableContainerImpl(), KP
     }
 
     fun <T> topLevelExtensionProperty(name: String, receiver: Class<T>): KTopLevelExtensionProperty<T, *> {
-        return KTopLevelExtensionPropertyImpl(name, this, receiver)
+        val descriptor = findPropertyDescriptor(name, receiver.defaultType)
+        return KTopLevelExtensionPropertyImpl(this, descriptor)
     }
 
     fun <T> mutableTopLevelExtensionProperty(name: String, receiver: Class<T>): KMutableTopLevelExtensionProperty<T, *> {
-        return KMutableTopLevelExtensionPropertyImpl(name, this, receiver)
+        val descriptor = findPropertyDescriptor(name, receiver.defaultType)
+        return KMutableTopLevelExtensionPropertyImpl(this, descriptor)
     }
 
     override fun equals(other: Any?): Boolean =
@@ -69,3 +74,26 @@ class KPackageImpl(override val jClass: Class<*>) : KCallableContainerImpl(), KP
         else name
     }
 }
+
+// Constructs generic JetType for array types and erased for all other types (non-reified classes and primitives)
+private val Class<*>.defaultType: JetType
+    get() {
+        return if (isArray()) {
+            val componentType = getComponentType()
+            if (componentType.isPrimitive()) {
+                JavaToKotlinClassMap.INSTANCE.mapPrimitiveKotlinClass("[${componentType.getName()}")!!
+            }
+            else {
+                KotlinBuiltIns.getInstance().getArrayType(Variance.INVARIANT, componentType.defaultType)
+            }
+        }
+        else if (isPrimitive()) {
+            JavaToKotlinClassMap.INSTANCE.mapPrimitiveKotlinClass(getName())!!
+        }
+        else {
+            val descriptor = (this@defaultType.kotlin as KClassImpl<*>).descriptor
+            val classes = JavaToKotlinClassMap.INSTANCE.mapPlatformClass(descriptor)
+            // TODO: what should be done if there's more than one?
+            (classes.firstOrNull() ?: descriptor).getDefaultType()
+        }
+    }

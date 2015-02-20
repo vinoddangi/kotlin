@@ -3,10 +3,13 @@ import kotlin.test.assertEquals
 
 fun check(expected: String, p: KExtensionProperty<*, *>) {
     var s = p.toString()
+
     // Strip "val" or "var"
+    assert(s.startsWith("val ") || s.startsWith("var ")) { "Fail val/var: $s" }
     s = s.substring(4)
+
     // Strip property name, leave only receiver class
-    s = s.substring(0, s.lastIndexOf('.'))
+    s = s.substringBeforeLast('.')
 
     assertEquals(expected, s)
 }
@@ -55,12 +58,12 @@ fun box(): String {
     check("kotlin.LongArray", LongArray::x)
     check("kotlin.DoubleArray", DoubleArray::x)
 
-    check("kotlin.Array<java.lang.Integer>", Array<Int>::a1)
-    check("kotlin.Array<java.lang.Object>", Array<Any>::a2)
-    check("kotlin.Array<kotlin.Array<java.lang.String>>", Array<Array<String>>::a3)
+    check("kotlin.Array<kotlin.Int>", Array<Int>::a1)
+    check("kotlin.Array<kotlin.Any>", Array<Any>::a2)
+    check("kotlin.Array<kotlin.Array<kotlin.String>>", Array<Array<String>>::a3)
     check("kotlin.Array<kotlin.BooleanArray>", Array<BooleanArray>::a4)
 
-    check("java.util.Map", Map<String, Runnable>::m)
+    check("kotlin.Map<kotlin.String, java.lang.Runnable>", Map<String, Runnable>::m)
 
     return "OK"
 }
