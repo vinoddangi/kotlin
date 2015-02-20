@@ -17,6 +17,7 @@
 package kotlin.reflect.jvm.internal
 
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
+import org.jetbrains.kotlin.descriptors.PropertyDescriptor
 import org.jetbrains.kotlin.load.java.structure.reflect.classId
 import org.jetbrains.kotlin.resolve.scopes.JetScope
 import org.jetbrains.kotlin.serialization.deserialization.findClassAcrossModuleDependencies
@@ -54,6 +55,13 @@ class KClassImpl<T>(override val jClass: Class<T>) : KCallableContainerImpl(), K
 
     // TODO: type arguments?
     override val scope: JetScope get() = descriptor.getDefaultType().getMemberScope()
+
+    override fun getProperties(): Collection<KMemberProperty<T, *>> {
+        return scope.getAllDescriptors().stream()
+                .filterIsInstance<PropertyDescriptor>()
+                .map { memberProperty(it.getName().asString()) }
+                .toList()
+    }
 
     private val origin by ReflectProperties.lazy {(): KClassOrigin ->
         if (jClass.isAnnotationPresent(javaClass<KotlinClass>())) {
