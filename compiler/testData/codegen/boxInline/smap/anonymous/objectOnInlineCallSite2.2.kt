@@ -17,7 +17,7 @@ inline fun test(): String {
 
     return res
 }
-
+//TODO SHOULD BE LESS
 
 //SMAP
 //objectOnInlineCallSite2.2.kt
@@ -27,7 +27,7 @@ inline fun test(): String {
 //+ 1 objectOnInlineCallSite2.2.kt
 //builders/BuildersPackage$objectOnInlineCallSite2_2$HASH$test$1$1
 //*L
-//1#1,22:1
+//1#1,53:1
 //*E
 //
 //SMAP
@@ -38,7 +38,7 @@ inline fun test(): String {
 //+ 1 objectOnInlineCallSite2.2.kt
 //builders/BuildersPackage
 //*L
-//1#1,22:1
+//1#1,53:1
 //*E
 //
 //SMAP
@@ -49,5 +49,5 @@ inline fun test(): String {
 //+ 1 objectOnInlineCallSite2.2.kt
 //builders/BuildersPackage$objectOnInlineCallSite2_2$HASH$test$1$1
 //*L
-//1#1,22:1
+//1#1,53:1
 //*E

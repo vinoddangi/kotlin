@@ -17,7 +17,7 @@ inline fun test(): String {
 fun box(): String {
     return test()
 }
-
+//TODO SHOULD BE LESS
 
 //SMAP
 //lambdaOnInlineCallSite.1.kt

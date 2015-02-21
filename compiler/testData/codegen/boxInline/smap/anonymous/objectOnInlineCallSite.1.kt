@@ -19,7 +19,7 @@ inline fun test(): String {
 fun box(): String {
     return test()
 }
-
+//TODO SHOULD BE LESS
 
 //SMAP
 //objectOnInlineCallSite.1.kt
