@@ -85,6 +85,9 @@ public class InlineCodegen extends CallGenerator {
 
     private final SourceMapper sourceMapper;
 
+    @Nullable
+    private JetNamedFunction inlinedFunctionIfFromSource;
+
     public InlineCodegen(
             @NotNull ExpressionCodegen codegen,
             @NotNull GenerationState state,
@@ -192,9 +195,10 @@ public class InlineCodegen extends CallGenerator {
         else {
             PsiElement element = DescriptorToSourceUtils.descriptorToDeclaration(functionDescriptor);
 
-            if (element == null) {
+            if (element == null || !(element instanceof JetNamedDeclaration)) {
                 throw new RuntimeException("Couldn't find declaration for function " + descriptorName(functionDescriptor));
             }
+            inlinedFunctionIfFromSource = (JetNamedFunction) element;
 
             MethodNode node = new MethodNode(InlineCodegenUtil.API,
                                            getMethodAsmFlags(functionDescriptor, context.getContextKind()) | (callDefault ? Opcodes.ACC_STATIC : 0),
@@ -210,17 +214,17 @@ public class InlineCodegen extends CallGenerator {
             SMAP smap;
             if (callDefault) {
                 Type ownerType = typeMapper.mapOwner(functionDescriptor, false/*use facade class*/);
-                FakeMemberCodegen parentCodegen = new FakeMemberCodegen(codegen.getParentCodegen(), (JetNamedFunction) element,
+                FakeMemberCodegen parentCodegen = new FakeMemberCodegen(codegen.getParentCodegen(), inlinedFunctionIfFromSource,
                                                                         (FieldOwnerContext) methodContext.getParentContext(),
                                                                         ownerType.getInternalName());
                 FunctionCodegen.generateDefaultImplBody(
                         methodContext, functionDescriptor, maxCalcAdapter, DefaultParameterValueLoader.DEFAULT,
-                        (JetNamedFunction) element, parentCodegen
+                        inlinedFunctionIfFromSource, parentCodegen
                 );
-                smap = createSMAPWithDefaultMapping((JetNamedFunction) element, parentCodegen.getSourceMapper().getResultMappings());
+                smap = createSMAPWithDefaultMapping(inlinedFunctionIfFromSource, parentCodegen.getSourceMapper().getResultMappings());
             }
             else {
-                smap = generateMethodBody(maxCalcAdapter, functionDescriptor, methodContext, (JetDeclarationWithBody) element,
+                smap = generateMethodBody(maxCalcAdapter, functionDescriptor, methodContext, inlinedFunctionIfFromSource,
                                                jvmSignature, false);
             }
 
@@ -232,8 +236,6 @@ public class InlineCodegen extends CallGenerator {
     }
 
     private InlineResult inlineCall(SMAPAndMethodNode nodeAndSmap) {
-        SourceInfo sourceInfo = nodeAndSmap.getClassSMAP().getSourceInfo();
-
         MethodNode node = nodeAndSmap.getNode();
         ReifiedTypeParametersUsages reificationResult = reifiedTypeInliner.reifyInstructions(node.instructions);
         generateClosuresBodies();
@@ -255,7 +257,7 @@ public class InlineCodegen extends CallGenerator {
 
         MethodInliner inliner = new MethodInliner(node, parameters, info, new FieldRemapper(null, null, parameters), isSameModule,
                                                   "Method inlining " + callElement.getText(),
-                                                  new NestedSourceMapper(sourceMapper, nodeAndSmap.getRanges(), sourceInfo)); //with captured
+                                                  createSourceMapper(nodeAndSmap)); //with captured
 
         LocalVarRemapper remapper = new LocalVarRemapper(parameters, initialFrameSize);
 
@@ -657,6 +659,14 @@ public class InlineCodegen extends CallGenerator {
         for (TryCatchBlockNodeWrapper node : nodes) {
             intoNode.tryCatchBlocks.add(node.getNode());
         }
+    }
+
+    private SourceMapper createSourceMapper(@NotNull SMAPAndMethodNode nodeAndSmap) {
+        //if (inlinedFunctionIfFromSource != null && callElement.getContainingJetFile() == inlinedFunctionIfFromSource.getContainingJetFile()) {
+        //    //if function from same file use original mapper
+        //    return new DelegateMapper(sourceMapper);
+        //}
+        return new NestedSourceMapper(sourceMapper, nodeAndSmap.getRanges(), nodeAndSmap.getClassSMAP().getSourceInfo());
     }
 
 }

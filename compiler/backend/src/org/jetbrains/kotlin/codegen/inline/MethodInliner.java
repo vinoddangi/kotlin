@@ -239,6 +239,7 @@ public class MethodInliner {
                     StackValue.onStack(delegate.getReturnType()).put(bridge.getReturnType(), this);
                     setLambdaInlining(false);
                     addInlineMarker(this, false);
+                    mapper.endMapping();
                 }
                 else if (isAnonymousConstructorCall(owner, name)) { //TODO add method
                     assert anonymousObjectGen != null : "<init> call not corresponds to new call" + owner + " " + name;

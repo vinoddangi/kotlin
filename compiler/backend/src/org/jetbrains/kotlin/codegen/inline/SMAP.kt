@@ -84,6 +84,11 @@ public class SMAPBuilder(val source: String,
     }
 }
 
+public class DelegateMapper(override val parent: SourceMapper) : SourceMapper by parent {
+
+}
+
+
 public open class NestedSourceMapper(parent: SourceMapper, val ranges: List<RangeMapping>, sourceInfo: SourceInfo) : DefaultSourceMapper(sourceInfo, parent) {
 
     override fun visitLineNumber(iv: MethodVisitor, lineNumber: Int, start: Label) {
